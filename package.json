@@ -1,0 +1,12 @@
+{
+  "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
+  "name": "caboose",
+  "description": "Rails-ish",
+  "version": "0.1.0",
+  "main": "index",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
