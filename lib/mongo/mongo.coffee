@@ -26,8 +26,9 @@ class Mongo
     
   registerModel: (model) ->
     @models.push model
-    @db.collection model.name, (err, c) ->
-      return console.error err.stack if err?
-      model.collection = c
+    if @db?
+      @db.collection model.name, (err, c) ->
+        return console.error err.stack if err?
+        model.collection = c
 
 module.exports = new Mongo()

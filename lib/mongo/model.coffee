@@ -1,54 +1,40 @@
 mongodb = require 'mongodb'
 Spec = require './spec'
+Query = require './query'
 Mongo = require './mongo'
 
 module.exports = class Model
   constructor: (@name, config) ->
-    @spec = new Spec()
-    config.call @spec
+    @spec = Spec.create config
     Mongo.registerModel this
-  
-  _wrap: (item) ->
-    class Wrapper
-      constructor: (doc) ->
-        Object.defineProperty this, 'doc', value: doc
-    wrapped = new Wrapper item
-    for field in @spec.fields
-      do (field) ->
-        Object.defineProperty wrapped, field.name, {
-          enumerable: true,
-          get: ->
-            value = field.get @doc[field.key]
-            # field.validate? value
-            value
-        }
-    wrapped
-    
+
+    # create dynamic finders
+    for index in @spec.indexes
+      this['one_by_' + index.fields[0].name] = (value) =>
+        query = {}
+        query[index.fields[0].name] = value
+        new Query.One @collection, @spec, query
+      this['all_by_' + index.fields[0].name] = (value) =>
+        query = {}
+        query[index.fields[0].name] = value
+        new Query @collection, @spec, query
+
   count: (callback) ->
     @collection.count callback
 
-  find: (id, callback) ->
-    @collection.findOne {_id: id}, (err, item) =>
-      return callback err if err?
-      callback null, @_wrap item
-    
   where: (query) ->
+    new Query @collection, @spec, query
     
   save: (doc, callback) ->
-    try
-      for field in @spec.fields
-        do (field) ->
-          field.validator doc if field.validator?
-    catch err
-      return callback err
-    
-    fixed = {}
-    for field in @spec.fieldsWithDefault
-      do (field) ->
-        fixed[field.key] = field.default
-    for k, v of doc
-      fixed[@spec.nameToKey[k]] = v
-    
-    @collection.insert fixed, callback
+    err = @spec.validate doc
+    return callback err if err?
+    fixed = @spec.filter doc, Spec.applyDefault, Spec.nameToKey
+    @collection.save fixed, (err) =>
+      if err? then callback err else callback null, @spec.filter fixed, Spec.keyToName
+  
+  update: (query, update, callback) ->
+    fixedQuery = @spec.filter query, Spec.nameToKey
+    fixedUpdate = @spec.filter update, Spec.nameToKey
+    @collection.update fixedQuery, fixedUpdate, callback
 
 module.exports.Timestamp = mongodb.BSONNative.Timestamp

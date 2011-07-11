@@ -17,19 +17,19 @@ class Router
       for filter in (before || [])
         if typeof filter is 'function'
           filters.push _wrapFilter(filter)
-        else if filter.filter? and typeof filter.filter is 'function'
+        else if filter?.filter? and typeof filter?.filter is 'function'
           if not filter.only? or action in filter.only
             filters.push _wrapFilter(filter.filter)
       
       console.log "  #{route} -> #{action} #{filters.length}"
-      @server[method] route, filters, (req, res) ->
+      @server[method] route, filters, (req, res, next) ->
         res.contentType 'application/json'
-        handler[action] req, (err, data) ->
-          if err
-            console.error err.stack if err
-            res.send err.stack, 500
-          else
-            res.send data, 200
+        try
+          handler[action] req, (err, data) ->
+            return next err if err?
+            res.send {success: true, data: data}, 200
+        catch err
+          next err
     
     for name, handler of config
       console.log name
@@ -52,10 +52,9 @@ class Server
       @server.use express.methodOverride()
       @server.use express.cookieParser()
       @server.use @server.router
-    @server.configure 'development', =>
-      @server.use express.errorHandler(dumpExceptions: true, showStack: true)
-    @server.configure 'production', =>
-      @server.use express.errorHandler()
+      @server.error (err, req, res) ->
+        console.error err.stack if err
+        res.send {success: false, message: err.message}, 500
     
     @router = new Router @server
 
