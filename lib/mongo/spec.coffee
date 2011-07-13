@@ -40,17 +40,34 @@ class Spec
   filter: (obj, filters...) ->
     newObj = {}
     for field in @fields
-      filter.call newObj, obj, field for filter in filters
+      handled = 0
+      handled |= filter.call newObj, obj, field for filter in filters
+      Spec._copy.call newObj, obj, field if handled is 0
     newObj
 
 Spec.nameToKey = (doc, field) ->
-  this[field.key] = doc[field.name] if doc[field.name]?
+  if doc[field.name]?
+    this[field.key] = doc[field.name]
+    return true
+  false
 
 Spec.keyToName = (doc, field) ->
-  this[field.name] = doc[field.key] if doc[field.key]?
+  if doc[field.key]?
+    this[field.name] = doc[field.key]
+    return true
+  false
+
+Spec._copy = (doc, field) ->
+  if doc[field.name]?
+    this[field.name] = doc[field.name]
+    return true
+  false
 
 Spec.applyDefault = (doc, field) ->
-  doc[field.name] = field.default?() ? field.default if not doc[field.name]? and field.default?
+  if not doc[field.name]? and field.default?
+    this[field.name] = field.default?() ? field.default
+    return true
+  false
 
 Spec.create = (config) ->
   class Configurator
@@ -74,7 +91,10 @@ Spec.create = (config) ->
     db_ref: (name, options) -> @_field 'db_ref', name, options
     binary: (name, options) -> @_field 'binary', name, options
     code: (name, options) -> @_field 'code', name, options
-    object: (name, options) -> @_field 'object', name, options
+    object: (name, options, structure) ->
+      @_field 'object', name, options
+      # console.log 'structure: ' + structure
+    array: (name, options) -> @_field 'array', name, options
     
     index: (name, options) ->
   
