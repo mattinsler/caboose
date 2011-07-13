@@ -1,12 +1,17 @@
 {
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose",
-  "description": "Rails-ish",
+  "description": "Rails-ish Web-Services",
   "version": "0.1.0",
   "main": "index",
   "engines": {
     "node": "*"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "express": "2.3.x",
+    "mongodb": "0.9.x"
+  },
+  "devDependencies": {
+    "vows": "0.5.8"
+  }
 }
