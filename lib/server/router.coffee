@@ -1,11 +1,10 @@
-fs = require 'fs'
-path = require 'path'
-express = require 'express'
-
-class Router
+module.exports = class Router
   constructor: (@server) ->
+    @server.error (err, req, res) ->
+      console.error err.stack if err
+      res.send {success: false, message: err.message}, 500
 
-  resources: (config) =>
+  resources: (config) ->
     _wrapFilter = (filter) ->
       (req, res, next) ->
         try
@@ -43,45 +42,3 @@ class Router
           when 'edit'   then _handle 'get',    before, "/#{name}/:id/edit", handler, action
           when 'update' then _handle 'put',    before, "/#{name}/:id",      handler, action
           when 'delete' then _handle 'delete', before, "/#{name}/:id",      handler, action
-
-class Server
-  constructor: (routeConfigurator) ->
-    @server = express.createServer()
-    @server.configure =>
-      @server.use express.bodyParser()
-      @server.use express.methodOverride()
-      @server.use express.cookieParser()
-      @server.use @server.router
-      @server.error (err, req, res) ->
-        console.error err.stack if err
-        res.send {success: false, message: err.message}, 500
-    
-    @router = new Router @server
-
-    if routeConfigurator?
-      if typeof routeConfigurator is 'string'
-        @routeDirectory routeConfigurator
-      else if Array.isArray routeConfigurator
-        @routeDirectory dir for dir in routeConfigurator
-      else if typeof routeConfigurator is 'object'
-        @route routeConfigurator
-
-  route: (configurator) ->
-    configurator @router
-
-  routeDirectory: (dirPath) ->
-    @route (router) ->
-      fs.readdirSync(dirPath).forEach (file) ->
-         route = {}
-         route[/^([^.]+)/.exec(file)[1]] = require path.join(dirPath, file)
-         router.resources route
-
-  listen: (port) ->
-    @server.listen port
-    this
-
-  address: ->
-    @server.address()
-
-exports.createServer = (routes) ->
-  new Server routes
