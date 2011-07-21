@@ -1,0 +1,22 @@
+#!/usr/bin/env coffee
+
+sys = require 'sys'
+caboose = require 'caboose'
+
+usage = ->
+  sys.puts [
+    'usage: caboose',
+    '',
+    'options:',
+    '  -h, --help     Show the help'
+  ].join '\n'
+  process.exit 1
+
+error = (err) ->
+  sys.puts "ERROR: #{err}"
+  usage()
+
+argv = require('optimist').argv
+usage() if argv.h or argv.help
+
+caboose.start process.cwd()
