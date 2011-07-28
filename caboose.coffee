@@ -4,21 +4,14 @@ Application = require './lib/application'
 exports.start = (options) ->
   app = new Application()
   
-  paths = {}
-  if typeof options is 'string'
-    paths.app = path.join options, 'app'
-    paths.controllers = path.join paths.app, 'controllers'
-    paths.models = path.join paths.app, 'models'
-    paths.helpers = path.join paths.app, 'helpers'
-    paths.views = path.join paths.app, 'views'
-    paths.config = path.join options, 'config'
-  app.paths = paths
+  app.paths = require('./lib/paths').get('./app')
 
   # read config
-  config =
-    http:
-      enabled: true
-      port: 3000
+  config = {}
+  applicationConfig = require path.join app.paths.config, 'application'
+  applicationConfig config if applicationConfig?
 
+  global.app = app
   app.initialize config
   app.listen()
+  console.log "Listening on port #{app.address().port}"

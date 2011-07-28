@@ -69,37 +69,37 @@ Spec.applyDefault = (doc, field) ->
     return true
   false
 
-Spec.create = (config) ->
-  class Configurator
-    constructor: () ->
-      @fields = []
-    _field: (type, name, options) ->
-      field =
-        type: type,
-        name: name,
-        key: options?.key ? name,
-        get: options?.get ? (v) -> v,
-        default: options?.default ? null,
-        index: options?.index
-      field.validator = if options?.validates? then createValidator field, options.validates else null
-      @fields.push field
-      
-    string: (name, options) -> @_field 'string', name, options
-    long: (name, options) -> @_field 'long', name, options
-    object_id: (name, options) -> @_field 'object_id', name, options
-    timestamp: (name, options) -> @_field 'timestamp', name, options
-    db_ref: (name, options) -> @_field 'db_ref', name, options
-    binary: (name, options) -> @_field 'binary', name, options
-    code: (name, options) -> @_field 'code', name, options
-    object: (name, options, structure) ->
-      @_field 'object', name, options
-      # console.log 'structure: ' + structure
-    array: (name, options) -> @_field 'array', name, options
-    
-    index: (name, options) ->
-  
-  configurator = new Configurator()
-  config.call configurator
-  new Spec configurator.fields
+# Spec.create = (config) ->
+#   class Configurator
+#     constructor: () ->
+#       @fields = []
+#     _field: (type, name, options) ->
+#       field =
+#         type: type,
+#         name: name,
+#         key: options?.key ? name,
+#         get: options?.get ? (v) -> v,
+#         default: options?.default ? null,
+#         index: options?.index
+#       field.validator = if options?.validates? then createValidator field, options.validates else null
+#       @fields.push field
+#       
+#     string: (name, options) -> @_field 'string', name, options
+#     long: (name, options) -> @_field 'long', name, options
+#     object_id: (name, options) -> @_field 'object_id', name, options
+#     timestamp: (name, options) -> @_field 'timestamp', name, options
+#     db_ref: (name, options) -> @_field 'db_ref', name, options
+#     binary: (name, options) -> @_field 'binary', name, options
+#     code: (name, options) -> @_field 'code', name, options
+#     object: (name, options, structure) ->
+#       @_field 'object', name, options
+#       # console.log 'structure: ' + structure
+#     array: (name, options) -> @_field 'array', name, options
+#     
+#     index: (name, options) ->
+#   
+#   configurator = new Configurator()
+#   config.call configurator
+#   new Spec configurator.fields
 
 module.exports = Spec

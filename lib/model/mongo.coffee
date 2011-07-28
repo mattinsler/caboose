@@ -27,7 +27,7 @@ class Mongo
   registerModel: (model) ->
     @models.push model
     if @db?
-      @db.collection model.name, (err, c) ->
+      @db.collection model.collection_name, (err, c) ->
         return console.error err.stack if err?
         model.collection = c
 

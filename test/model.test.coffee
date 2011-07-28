@@ -1,14 +1,19 @@
 vows = require 'vows'
 assert = require 'assert'
 
-Model = require '../lib/mongo/model'
-Spec = require '../lib/mongo/spec'
+Model = require '../lib/model/model'
+Spec = require '../lib/model/spec'
 
-Foo = new Model 'test', ->
-  @string 'app_id', key: 'a'
-  @object 'object', key: 'o', default: {foo: 'bar'}
+ModelCompiler = require '../lib/model/model_compiler'
+compiler = new ModelCompiler()
 
-fixture_1 = app_id: 'hello', something: 'world'
+Foo = compiler.compile "class Foo extends Model\n
+  string 'app_id', key: 'a'\n
+  string 'no_key'\n
+  object 'object', key: 'o', default: {foo: 'bar'}\n
+"
+
+fixture_1 = app_id: 'hello', no_key: 'boo', something: 'world'
 fixture_2 = a: 'hello', s: 'world'
 
 vows.describe('Model')
@@ -26,6 +31,8 @@ vows.describe('Model')
       assert.equal o.a, 'hello'
     'name should be undefined': (o) ->
       assert.isUndefined o.app_id
+    'names without keys should be present': (o) ->
+      assert.equal o.no_key, 'boo'
     'unknown fields should be undefined': (o) ->
       assert.isUndefined o.something
 .addBatch
