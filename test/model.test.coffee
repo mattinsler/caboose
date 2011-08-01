@@ -26,7 +26,7 @@ vows.describe('Model')
       assert.isUndefined o.something
 .addBatch
   'Name to key filter':
-    topic: Foo.spec.filter fixture_1, Spec.nameToKey
+    topic: Foo.spec.filter fixture_1, Spec.NameToKey
     'key should be present': (o) ->
       assert.equal o.a, 'hello'
     'name should be undefined': (o) ->
@@ -37,7 +37,7 @@ vows.describe('Model')
       assert.isUndefined o.something
 .addBatch
   'Key to name filter':
-    topic: Foo.spec.filter fixture_2, Spec.keyToName
+    topic: Foo.spec.filter fixture_2, Spec.KeyToName
     'name should be present': (o) ->
       assert.equal o.app_id, 'hello'
     'key should be undefined': (o) ->
@@ -46,11 +46,20 @@ vows.describe('Model')
       assert.isUndefined o.s
 .addBatch
   'Default filter':
-    topic: Foo.spec.filter fixture_1, Spec.applyDefault
+    topic: Foo.spec.filter fixture_1, Spec.ApplyDefault
     'name should be present': (o) ->
       assert.equal o.app_id, 'hello'
     'absent field should be default value': (o) ->
       assert.deepEqual o.object, {foo: 'bar'}
+    'unknown fields should be undefined': (o) ->
+      assert.isUndefined o.something
+.addBatch
+  'Default filter & name to key':
+    topic: Foo.spec.filter fixture_1, Spec.ApplyDefault, Spec.NameToKey
+    'name should be present': (o) ->
+      assert.equal o.a, 'hello'
+    'absent field should be default value': (o) ->
+      assert.deepEqual o.o, {foo: 'bar'}
     'unknown fields should be undefined': (o) ->
       assert.isUndefined o.something
 .export module

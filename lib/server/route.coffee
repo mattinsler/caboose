@@ -8,13 +8,16 @@ class Route
     @path = spec.path
 
   respond: (req, res, next) ->
+    format = req.params.format ? 'html'
+    return res.send 404 if @controllerFactory.responds_to? and format not in @controllerFactory.responds_to
+    
     responder = new Responder @viewFactory, req, res, next
     controller = @controllerFactory.create responder
     controller.execute @action
 
   @create: (spec) ->
-    viewFactory = app.registry.get "#{spec.controller}##{spec.action}_view"
-    controllerFactory = app.registry.get "#{spec.controller}_controller"
+    viewFactory = global.registry.get "#{spec.controller}##{spec.action}_view"
+    controllerFactory = global.registry.get "#{spec.controller}_controller"
     return null unless controllerFactory?
     new Route spec, controllerFactory, viewFactory
 

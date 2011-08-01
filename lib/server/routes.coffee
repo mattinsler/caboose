@@ -14,9 +14,11 @@ module.exports = class Routes
     p = (if @prefix? then @prefix + '/' else '') + path
     p = (if p[0] is '/' then '' else '/') + p
     
+    options = path unless options?
     if typeof options is 'string'
       a = method: 'get'
-      [foo, a.controller, a.action] = /^([^#]+)#(.+)$/.exec options
+      [foo, a.controller, bar, a.action] = /^([^#]+)(#(.+))?$/.exec options
+      a.action ?= 'index'
       options = a
     else
       options.method ?= 'get'

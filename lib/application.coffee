@@ -2,11 +2,10 @@ path = require 'path'
 express = require 'express'
 Routes = require './server/routes'
 Router = require './server/router'
-Registry = require './registry'
 
 module.exports = class Application
   constructor: ->
-    @registry = new Registry()
+    @registry = require './registry'
     
   initialize: (config) ->
     @config = config

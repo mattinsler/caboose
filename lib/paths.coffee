@@ -5,6 +5,7 @@ find_paths = (root) ->
   paths =
     app: path.join root, 'app'
     config: path.join root, 'config'
+    plugins: path.join root, 'plugins'
   paths.controllers = path.join paths.app, 'controllers'
   paths.models = path.join paths.app, 'models'
   paths.helpers = path.join paths.app, 'helpers'
@@ -21,5 +22,5 @@ find_paths = (root) ->
 exports.get = (root) ->
   return exports.cached_paths if exports.cached_paths?
   exports.cached_paths = find_paths(root ? process.cwd())
-  throw new Error 'Could not find a root for paths' if not exports.cached_paths?
+  console.error 'Could not find a root for paths' if not exports.cached_paths?
   exports.cached_paths

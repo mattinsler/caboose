@@ -2,19 +2,30 @@ ejs = require 'ejs'
 
 class Responder
   constructor: (@viewFactory, @req, @res, @next) ->
-    # console.log headers: @req.headers, url: @req.url, query: @req.query, params: @req.params
-    
+    @_renderers = {
+      html: (data) =>
+        view = @viewFactory.create()
+        html = ejs.render view.html.template, {
+          locals: data,
+          filename: view.html.filename
+        }
+        @res.contentType 'text/html'
+        @res.send html, 200
+      json: (data) =>
+        @res.contentType 'application/json'
+        @res.send data, 200
+    }
+
   render: (data) ->
-    # return res.send 404 if not @view?.htmlTemplate?
-    view = @viewFactory.create()
+    format = @req.params.format ? 'html'
+    renderer = @_renderers[format]
+    @res.send 404 unless renderer?
     try
-      html = ejs.render view.html.template, {
-        locals: data,
-        filename: view.html.filename
-      }
-      @res.send html, 200
+      renderer data
     catch err
       @next err
+    
+    # return res.send 404 if not @view?.htmlTemplate?
       
   redirect_to: (url) ->
     @res.redirect url

@@ -1,3 +1,4 @@
+path = require 'path'
 mongodb = require 'mongodb'
 Spec = require './spec'
 Query = require './query'
@@ -14,6 +15,8 @@ class Model
         query[index.fields[0].name] = value
         new Query @collection, @spec, query
 
+    this[k] = v for k, v of @spec.statics
+
   count: (callback) ->
     @collection.count callback
 
@@ -22,22 +25,35 @@ class Model
     
   save: (doc, callback) ->
     err = @spec.validate doc
-    return callback err if err?
-    fixed = @spec.filter doc, Spec.applyDefault, Spec.nameToKey
+    return callback and callback err if err?
+    fixed = @spec.filter doc, Spec.ApplyDefault, Spec.ApplySetter, Spec.NameToKey
     @collection.save fixed, (err) =>
-      return callback && callback err if err?
-      callback && callback null, @spec.filter fixed, Spec.keyToName
+      return callback and callback err if err?
+      callback and callback null, @spec.filter fixed, Spec.KeyToName
   
   update: (query, update, callback) ->
-    fixedQuery = @spec.filter query, Spec.nameToKey
-    fixedUpdate = @spec.filter update, Spec.nameToKey
-    @collection.update fixedQuery, fixedUpdate, callback
+    fixedQuery = @spec.filter query, Spec.NameToKey
+    # fixedUpdate = @spec.filter update, Spec.NameToKey
+    console.log 'update'
+    console.log fixedQuery
+    console.log update
+    @collection.update fixedQuery, update, (err) =>
+      callback and callback err
+    
+  @Timestamp: mongodb.BSONNative.Timestamp
 
-Model.Timestamp = mongodb.BSONNative.Timestamp
-Model.connect = -> Mongo.connect.apply Mongo, arguments
-Model.compile = (filename) ->
-  ModelCompiler = require './model_compiler'
-  compiler = new ModelCompiler()
-  compiler.compile_file filename
+  @connect: -> Mongo.connect.apply Mongo, arguments
+  
+  @compile = (filename) ->
+    return null if not path.existsSync filename
+    ModelCompiler = require './model_compiler'
+    compiler = new ModelCompiler()
+    # compiler.debug = true
+    try
+      compiler.compile_file filename
+    catch err
+      console.log "Error trying to compile Model for #{filename}"
+      console.error err.stack
+      null
 
 module.exports = Model

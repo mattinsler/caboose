@@ -15,8 +15,10 @@ module.exports = class Router
       res.send {success: false, message: err.message}, 500
       
   add: (route) ->
-    console.log "#{route.method} #{route.path}"
-    @server[route.method] route.path, (req, res, next) ->
+    path = route.path
+    path += '.:format?' unless path[path.length - 1] is '/'
+    console.log "#{route.method} #{path}"
+    @server[route.method] path, (req, res, next) ->
       route.respond req, res, next
 
 Router.create = (server, routes) ->

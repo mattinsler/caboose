@@ -54,5 +54,5 @@ class Registry
     parsed = @split name unless parsed?
     key = parsed.join '_'
     Model.compile path.join(paths.models, key + '.coffee')
-    
-module.exports = Registry
+
+global.registry = new Registry()

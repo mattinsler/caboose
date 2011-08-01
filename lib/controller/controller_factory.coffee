@@ -5,14 +5,20 @@ coffee = require 'coffee-script'
 Controller = require './controller'
 
 class ControllerFactory
-  constructor: (@class, @filters) ->
+  constructor: (@name, @extends, @class, filters) ->
+    if 'Controller' is @extends
+      @filters = filters
+    else
+      @filters = global.registry.get(@extends).filters.concat filters
   
   create: (responder) ->
     controller = new @class()
-    controller.filters = @filters
-    controller.responder = responder
-    controller.params = responder.req.cookies
-    controller.params = responder.req.session
+    controller._name = @name
+    controller._extends = @extends
+    controller._filters = @filters
+    controller._responder = responder
+    controller.cookies = responder.req.cookies
+    controller.session = responder.req.session
     controller.body = responder.req.body
     controller.params = responder.req.params
     controller.query = responder.req.query
@@ -22,8 +28,7 @@ class ControllerFactory
   @compile = (filename) ->
     return null if not path.existsSync filename
     ControllerFactoryCompiler = require './controller_factory_compiler'
-    registry = global.registry ? new (require '../registry')()
-    compiler = new ControllerFactoryCompiler(registry)
+    compiler = new ControllerFactoryCompiler()
     # compiler.debug = true
     try
       compiler.compile_file filename

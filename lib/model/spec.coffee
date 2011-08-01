@@ -1,13 +1,7 @@
-createValidator = (field, config) ->
-  validators = []
-  if config.presence?
-    validators.push (model) ->
-      throw new Error "Validation Error: Presence [#{field.name}]" if not model[field.name]
-  (model) ->
-    v model for v in validators
-
 class Spec
-  constructor: (@fields) ->
+  constructor: (options) ->
+    this[k] = v for k, v of options
+    
     @indexes = []
     @_validators = []
     for field in @fields
@@ -17,18 +11,20 @@ class Spec
         idx.fields.push field
         @indexes.push idx
     @Wrapper = class Wrapper
-      constructor: (fields, doc) ->
+      constructor: (doc, fields, methods) ->
         Object.defineProperty this, 'doc', value: doc
         for field in fields
           (=>
             f = field
             Object.defineProperty this, f.name,
               enumerable: true
-              get: -> f.get @doc[f.key]
+              get: -> f.get @doc[f.key], f
           )()
+    for name, method of @methods
+      @Wrapper::[name] = method
   
   wrap: (obj) ->
-    if obj? then new @Wrapper @fields, obj else null
+    if obj? then new @Wrapper obj, @fields else null
     
   validate: (obj) ->
     try
@@ -40,66 +36,29 @@ class Spec
   filter: (obj, filters...) ->
     newObj = {}
     for field in @fields
-      handled = 0
-      handled |= filter.call newObj, obj, field for filter in filters
-      Spec._copy.call newObj, obj, field if handled is 0
+      x = 0
+      next = (key, value) ->
+        if x < filters.length
+          filters[x++] field, key, value, next
+        else
+          newObj[key] = value if value?
+      value = obj[field.key] ? obj[field.name]
+      # value = @filter value, filters if typeof value is 'object'
+      next field.name, value
     newObj
 
-Spec.nameToKey = (doc, field) ->
-  if doc[field.name]?
-    this[field.key] = doc[field.name]
-    return true
-  false
-
-Spec.keyToName = (doc, field) ->
-  if doc[field.key]?
-    this[field.name] = doc[field.key]
-    return true
-  false
-
-Spec._copy = (doc, field) ->
-  if doc[field.name]?
-    this[field.name] = doc[field.name]
-    return true
-  false
-
-Spec.applyDefault = (doc, field) ->
-  if not doc[field.name]? and field.default?
-    this[field.name] = field.default?() ? field.default
-    return true
-  false
-
-# Spec.create = (config) ->
-#   class Configurator
-#     constructor: () ->
-#       @fields = []
-#     _field: (type, name, options) ->
-#       field =
-#         type: type,
-#         name: name,
-#         key: options?.key ? name,
-#         get: options?.get ? (v) -> v,
-#         default: options?.default ? null,
-#         index: options?.index
-#       field.validator = if options?.validates? then createValidator field, options.validates else null
-#       @fields.push field
-#       
-#     string: (name, options) -> @_field 'string', name, options
-#     long: (name, options) -> @_field 'long', name, options
-#     object_id: (name, options) -> @_field 'object_id', name, options
-#     timestamp: (name, options) -> @_field 'timestamp', name, options
-#     db_ref: (name, options) -> @_field 'db_ref', name, options
-#     binary: (name, options) -> @_field 'binary', name, options
-#     code: (name, options) -> @_field 'code', name, options
-#     object: (name, options, structure) ->
-#       @_field 'object', name, options
-#       # console.log 'structure: ' + structure
-#     array: (name, options) -> @_field 'array', name, options
-#     
-#     index: (name, options) ->
-#   
-#   configurator = new Configurator()
-#   config.call configurator
-#   new Spec configurator.fields
+  @NameToKey: (field, key, value, next) ->
+    next field.key, value
+    
+  @ApplyDefault = (field, key, value, next) ->
+    value = (field.default?() ? field.default) if not value? and field.default?
+    next key, value
+  
+  @KeyToName = (field, key, value, next) ->
+    next field.name, value
+  
+  @ApplySetter = (field, key, value, next) ->
+    value = field.set value, field if field.set? and value?
+    next key, value
 
 module.exports = Spec
