@@ -4,12 +4,13 @@ paths = require('./paths').get()
 
 get_with_base = (base, filename, moduleName) ->
   plugins = []
-  for file in fs.readdirSync base
-    try
-      pluginModule = require path.join(base, file, filename)
-      plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
-    catch e
-      # console.error e.stack
+  if path.existsSync base
+    for file in fs.readdirSync base
+      try
+        pluginModule = require path.join(base, file, filename)
+        plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
+      catch e
+        # console.error e.stack
   plugins
 
 exports.get = (filename, moduleName) ->
