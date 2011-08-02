@@ -3,6 +3,7 @@ mongodb = require 'mongodb'
 Spec = require './spec'
 Query = require './query'
 Mongo = require './mongo'
+Type = require './type'
 
 class Model
   constructor: (@name, @collection_name, @spec) ->
@@ -57,3 +58,4 @@ class Model
       null
 
 module.exports = Model
+module.exports.Type = Type

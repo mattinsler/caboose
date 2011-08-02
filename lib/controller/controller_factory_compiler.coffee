@@ -1,9 +1,6 @@
 Compiler = require '../compiler'
 Controller = require './controller'
 ControllerFactory = require './controller_factory'
-Plugins = require '../plugins'
-
-plugins = Plugins.get 'controllers', 'compiler'
 
 module.exports = class ControllerFactoryCompiler extends Compiler
   precompile: ->
@@ -23,23 +20,13 @@ module.exports = class ControllerFactoryCompiler extends Compiler
       else if typeof filter is 'object' and typeof filter.filter? is 'string'
         @filters.push method: filter.filter, only: filter.only
         
-    add_to_scope = (k, v) =>
-      @scope[k] = =>
-        v.apply this, arguments
+    @apply_scope_plugins 'controllers'
+    @apply_precompile_plugins 'controllers'
 
-    if plugins.scope?
-      for plugin in plugins.scope
-        add_to_scope k, v for k, v of plugin
-        
-    if plugins.precompile?
-      plugin.call this for plugin in plugins.precompile
-  
   postcompile: ->
-    if plugins.postcompile?
-      plugin.call this for plugin in plugins.postcompile
+    @apply_postcompile_plugins 'controllers'
   
   respond: ->
     @response = new ControllerFactory @name, @extends, @scope.class, @filters
-    if plugins.respond?
-      plugin.call this for plugin in plugins.respond
+    @apply_respond_plugins 'controllers'
     @response

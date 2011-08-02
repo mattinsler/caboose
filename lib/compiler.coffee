@@ -1,15 +1,41 @@
 fs = require 'fs'
 vm = require 'vm'
 path = require 'path'
+Plugins = require './plugins'
 
 module.exports = class Compiler
+  get_plugins: (filename) ->
+    @_plugins ?= {}
+    @_plugins[filename] = Plugins.get filename, 'compiler' unless @_plugins[filename]
+    @_plugins[filename]
+  
+  apply_scope_plugins: (filename) ->
+    plugins = @get_plugins filename
+    return unless plugins.scope?
+    for plugin in plugins.scope
+      (@scope[k] = => v.apply this, arguments) for k, v of plugin
+
+  apply_plugins: (filename, methodName) ->
+    plugins = @get_plugins filename
+    return unless plugins[methodName]?
+    plugin.call this for plugin in plugins[methodName]
+
+  apply_precompile_plugins: (filename) ->
+    @apply_plugins filename, 'precompile'
+
+  apply_postcompile_plugins: (filename) ->
+    @apply_plugins filename, 'postcompile'
+
+  apply_respond_plugins: (filename) ->
+    @apply_plugins filename, 'respond'
+
   precompile: ->
     
   postcompile: ->
     
   respond: ->
     throw new Error 'You must define a respond method'
-  
+    
   compile_file: (fullPath) ->
     @fullPath = fullPath
     code = fs.readFileSync fullPath, 'utf8'
