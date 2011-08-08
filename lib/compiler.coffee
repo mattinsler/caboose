@@ -12,8 +12,10 @@ module.exports = class Compiler
   apply_scope_plugins: (filename) ->
     plugins = @get_plugins filename
     return unless plugins.scope?
+    apply_plugin = (k, v) =>
+      @scope[k] = => v.apply this, arguments
     for plugin in plugins.scope
-      (@scope[k] = => v.apply this, arguments) for k, v of plugin
+      apply_plugin k, v for k, v of plugin
 
   apply_plugins: (filename, methodName) ->
     plugins = @get_plugins filename

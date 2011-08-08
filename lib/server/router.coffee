@@ -1,6 +1,7 @@
 path = require 'path'
 express = require 'express'
 Route = require './route'
+paths = require('../paths').get()
 
 module.exports = class Router
   constructor: (@server) ->
@@ -9,6 +10,7 @@ module.exports = class Router
     @server.use express.cookieParser()
     @server.use express.session secret: 'some kind of random string'
     @server.use @server.router
+    @server.use express.static paths.public
 
     @server.error = (err, req, res) ->
       console.error err.stack if err

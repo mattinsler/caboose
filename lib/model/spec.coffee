@@ -3,19 +3,36 @@ Type = require './type'
 class Spec
   constructor: (options) ->
     # this[k] = v for k, v of options
+    
+    @indexes = []
+    @statics = options.statics
 
     @name_to_field = {}
     @key_to_field = {}
     for field in options.fields
       type = new field.type this, field
-      throw new Error 'type must be a Type' if type not instanceof Type
+      if type not instanceof Type
+        console.log field.type.name
+        throw new Error "#{type.name} #{field.name} must be a Type"
       @name_to_field[field.name] = type
       @key_to_field[field.key] = type
+      
+      if field.index
+        @indexes.push {fields: [field]}
+
+  validate: (doc) ->
+    null
       
   to_plain: (old_doc) ->
     new_doc = {}
     for k, v of @name_to_field
       v.to_plain old_doc, new_doc, old_doc[k]
+    new_doc
+  
+  from_server: (old_doc) ->
+    new_doc = {}
+    for k, v of @key_to_field
+      v.from_server old_doc, new_doc, old_doc[k]
     new_doc
     
   to_query: (old_doc) ->

@@ -6,6 +6,7 @@ find_paths = (root) ->
     app: path.join root, 'app'
     config: path.join root, 'config'
     plugins: path.join root, 'plugins'
+    public: path.join root, 'public'
   paths.controllers = path.join paths.app, 'controllers'
   paths.models = path.join paths.app, 'models'
   paths.helpers = path.join paths.app, 'helpers'

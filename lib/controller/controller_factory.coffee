@@ -23,6 +23,7 @@ class ControllerFactory
     controller.params = responder.req.params
     controller.query = responder.req.query
     controller.headers = responder.req.headers
+    controller.init()
     controller
 
   @compile = (filename) ->

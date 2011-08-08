@@ -1,7 +1,11 @@
 Type = require('caboose').Model.Type
 
 exports.Document = class Document extends Type
-  constructor: (spec, options) -> super(spec, options)
+  @type: 'Document'
+  
+  constructor: (spec, options) ->
+    super spec, options
+
   to_plain: (old_doc, new_doc, value) ->
     super old_doc, new_doc, value
     

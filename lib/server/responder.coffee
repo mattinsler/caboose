@@ -1,14 +1,22 @@
 ejs = require 'ejs'
 
 class Responder
-  constructor: (@viewFactory, @req, @res, @next) ->
+  constructor: (@layoutFactory, @viewFactory, @req, @res, @next) ->
     @_renderers = {
       html: (data) =>
         view = @viewFactory.create()
         html = ejs.render view.html.template, {
-          locals: data,
+          locals: data
           filename: view.html.filename
         }
+        if @layoutFactory?
+          layout = @layoutFactory.create()
+          data.yield = -> html
+          layoutHtml = ejs.render layout.html.template, {
+            locals: data,
+            filename: layout.html.filename
+          }
+          html = layoutHtml
         @res.contentType 'text/html'
         @res.send html, 200
       json: (data) =>

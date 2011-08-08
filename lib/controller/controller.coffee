@@ -1,4 +1,8 @@
 class Controller
+  init: ->
+    @flash = @session.flash ? {}
+    delete @session.flash
+
   execute: (action) ->
     throw new Error "Could not find #{action} in #{@_name}" if not this[action]?
     
@@ -18,7 +22,15 @@ class Controller
     @_responder.next err
   render: (data) ->
     @_responder.render (data ? this)
-  redirect_to: (url) ->
+  redirect_to: (url, options) ->
+    console.log 'redirect_to'
+    console.log arguments
+    if options.notice?
+      @session.flash ?= {}
+      @session.flash.notice = options.notice
+    if options.error?
+      @session.flash ?= {}
+      @session.flash.error = options.error
     @_responder.redirect_to url
     
   # options: httpOnly, secure, expires, maxAge
@@ -27,5 +39,11 @@ class Controller
     
   clear_cookie: (name) ->
     @_responder.res.clearCookie name
+    
+  stylesheet_link_tag: (filename) ->
+    return '<link type="text/css" rel="stylesheet" href="/css/' + filename + '.css">'
+    
+  link_to: (text, link) ->
+    return '<a href="' + link + '">' + text + '</a>'
     
 module.exports = Controller

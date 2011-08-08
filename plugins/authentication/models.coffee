@@ -6,54 +6,47 @@ generate_token = (length) ->
 
 exports.compiler =
   scope: {
-    password: (name, options) ->
-      options ?= {}
-      options.set = (value, field) ->
-        salt = bcrypt.gen_salt_sync 10
-        bcrypt.encrypt_sync value, salt
-
-      @add_field 'string', name, options
+    authenticate_using: (username_field, password_field) ->
       @_authentication ?= {}
-      @_authentication.password = name
-      
-    auth_token: (name, options) ->
-      @add_field 'string', name, options
+      @_authentication.username_field = username_field
+      @_authentication.password_field = password_field
+    
+    authenticate_with_token: (token_field) ->
       @_authentication ?= {}
-      @_authentication.auth_token = name
-
-    authenticate_by: (fields...) ->
-      @_authentication ?= {}
-      @_authentication.authenticate_by = fields
+      @_authentication.token_field = token_field
   }
 
   postcompile: ->
-    return unless @_authentication?
-    _authentication = @_authentication
-    @add_static 'authenticate_with', (options, callback) ->
-      # all of this can be used to double-check the field names and all that
-      # also, the authenticated_by fields is to enable multiple fields to be used as the username
-      #   for instance, if you wanted to look up by email and username, then it can be simplified
-      #   for you by calling authenticate_with 'username', 'password' rather than what i have now
-      
-      # if using auth token field
-      if _authentication.auth_token? and options[_authentication.auth_token]?
+    auth = @_authentication
+    return unless auth?
+
+    if auth.token_field?
+      @add_static 'authenticate_token', (token, callback) ->
         query = {}
-        query[_authentication.auth_token] = options[_authentication.auth_token]
-        this.where(options).first callback
+        query[auth.token_field] = token
+        @where(query).first callback
 
-      # if has authenticate by and password fields and using password
-      else if _authentication.authenticate_by? and _authentication.password? and options[_authentication.password]?
-        password = options[_authentication.password]
-        delete options[_authentication.password]
-        this.where(options).first (err, user) =>
+    if auth.username_field? and auth.password_field?
+      password_field = @find_field_by_name auth.password_field
+      password_field.set = (value, field) ->
+        salt = bcrypt.gen_salt_sync 10
+        bcrypt.encrypt_sync value, salt
+      
+      @add_static 'authenticate', (username, password, callback) ->
+        query = {}
+        query[auth.username_field] = username
+        @where(query).first (err, user) =>
           return callback err unless user?
-
-          bcrypt.compare password, user[_authentication.password], (err, result) =>
-            return callback err if err?
-            return callback() unless result
-
-            if not user.auth_token?
-              user.doc.auth_token = generate_token 32
-              this.update {id: user.id}, {$set: {auth_token: user.auth_token}}
+          
+          bcrypt.compare password, user[auth.password_field], (err, result) =>
+            return callback err unless result
             
+            if auth.token_field? not user[auth.token_field]?
+              user[auth.token_field] = generate_token 32
+              query = {}
+              query[auth.username_field] = username
+              update = {}
+              update[auth.token_field] = user[auth.token_field]
+              @update query, {$set: update}
+              
             callback null, user

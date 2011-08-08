@@ -1,6 +1,7 @@
 Compiler = require '../compiler'
 Spec = require './spec'
 Model = require './model'
+Type = require './type'
 
 createValidator = (field, config) ->
   validators = []
@@ -24,6 +25,11 @@ class ModelCompiler extends Compiler
     @spec.fields.push field
     field
   
+  find_field_by_name: (name) ->
+    for field in @spec.fields
+      return field if field.name is name
+    null
+  
   add_static: (name, method) ->
     @spec.statics[name] = method
   
@@ -45,14 +51,14 @@ class ModelCompiler extends Compiler
     throw new Error 'Could not find a model defined' if not @name?
   
     @scope.Model = class EmptyClass
-    @scope.collection = (collection_name) => @collection_name = collection_name
+    @scope.store_in = (collection_name) => @collection_name = collection_name
     @scope.method = => @add_method.apply this, arguments
     @scope.static = => @add_static.apply this, arguments
     @scope.field = => @add_field.apply this, arguments
 
     @apply_scope_plugins 'models'
     @apply_precompile_plugins 'models'
-      
+
   postcompile: ->
     @apply_postcompile_plugins 'models'
   

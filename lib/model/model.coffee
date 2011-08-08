@@ -27,18 +27,20 @@ class Model
   save: (doc, callback) ->
     err = @spec.validate doc
     return callback and callback err if err?
-    fixed = @spec.filter doc, Spec.ApplyDefault, Spec.ApplySetter, Spec.NameToKey
+    fixed = @spec.to_plain doc
     @collection.save fixed, (err) =>
       return callback and callback err if err?
-      callback and callback null, @spec.filter fixed, Spec.KeyToName
+      callback and callback null, @spec.from_server fixed
   
   update: (query, update, callback) ->
-    fixedQuery = @spec.filter query, Spec.NameToKey
+    # fixedQuery = @spec.filter query, Spec.NameToKey
+    fixedQuery = @spec.to_query query
     # fixedUpdate = @spec.filter update, Spec.NameToKey
+    fixedUpdate = @spec.to_query update
     console.log 'update'
     console.log fixedQuery
-    console.log update
-    @collection.update fixedQuery, update, (err) =>
+    console.log fixedUpdate
+    @collection.update fixedQuery, fixedUpdate, (err) =>
       callback and callback err
     
   @Timestamp: mongodb.BSONNative.Timestamp
