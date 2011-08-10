@@ -5,9 +5,13 @@ caboose = require 'caboose'
 
 usage = ->
   sys.puts [
-    'usage: caboose',
-    '',
-    'options:',
+    'usage: caboose'
+    ''
+    'commands:'
+    '  start          Start server'
+    '  test script    Test with script in test directory'
+    '  run script     Run script'
+    'options:'
     '  -h, --help     Show the help'
   ].join '\n'
   process.exit 1
@@ -17,6 +21,10 @@ error = (err) ->
   usage()
 
 argv = require('optimist').argv
-usage() if argv.h or argv.help
+return usage() if argv.h or argv.help
+return usage() if argv._.length is 0
 
-caboose.start process.cwd()
+command = argv._.shift()
+return usage() unless caboose[command]?
+
+caboose[command].call caboose, process.cwd(), argv

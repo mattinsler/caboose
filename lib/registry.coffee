@@ -31,10 +31,13 @@ class Registry
     parsed = @split name
     key = parsed.join '_'
     return @factories[key] if @factories[key]?
-    getter = @["get_#{parsed[parsed.length - 1]}"]
-    factory = (getter ? @get_model).call this, name, parsed
+    if @["get_#{parsed[parsed.length - 1]}"]?
+      type = parsed[parsed.length - 1]
+    else
+      type = 'model'
+    factory = @["get_#{type}"].call this, name, parsed
     return null unless factory?
-    factory.type = parsed[parsed.length - 1]
+    factory.type = type
     @factories[key] = factory if factory?
     factory
 
@@ -56,3 +59,4 @@ class Registry
     Model.compile path.join(paths.models, key + '.coffee')
 
 global.registry = new Registry()
+module.exports = global.registry
