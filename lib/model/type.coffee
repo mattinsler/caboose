@@ -1,6 +1,5 @@
 module.exports = class Type
   constructor: (@spec, @options) ->
-    @options.key ?= @options.name
 
   to_plain: (old_doc, new_doc, value) ->
     if value?

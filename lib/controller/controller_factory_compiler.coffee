@@ -2,7 +2,9 @@ Compiler = require '../compiler'
 Controller = require './controller'
 ControllerFactory = require './controller_factory'
 
-module.exports = class ControllerFactoryCompiler extends Compiler
+class ControllerFactoryCompiler extends Compiler
+  constructor: -> super()
+  
   precompile: ->
     @filters = []
     
@@ -15,7 +17,7 @@ module.exports = class ControllerFactoryCompiler extends Compiler
     
     @scope.Controller = Controller
     @scope.before_filter = (filter) =>
-      if typeof filter is 'string'
+      if typeof filter in ['string', 'function']
         @filters.push method: filter, only: null
       else if typeof filter is 'object' and typeof filter.filter? is 'string'
         @filters.push method: filter.filter, only: filter.only
@@ -30,3 +32,5 @@ module.exports = class ControllerFactoryCompiler extends Compiler
     @response = new ControllerFactory @name, @extends, @scope.class, @filters
     @apply_respond_plugins 'controllers'
     @response
+    
+module.exports = ControllerFactoryCompiler

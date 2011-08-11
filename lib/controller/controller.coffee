@@ -23,12 +23,10 @@ class Controller
   render: (data) ->
     @_responder.render (data ? this)
   redirect_to: (url, options) ->
-    console.log 'redirect_to'
-    console.log arguments
-    if options.notice?
+    if options?.notice?
       @session.flash ?= {}
       @session.flash.notice = options.notice
-    if options.error?
+    if options?.error?
       @session.flash ?= {}
       @session.flash.error = options.error
     @_responder.redirect_to url

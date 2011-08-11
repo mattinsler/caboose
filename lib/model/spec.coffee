@@ -72,6 +72,21 @@ class Spec
         handle_field k, v
     new_doc
 
+  @compile = (method) ->
+    return null unless typeof method is 'function'
+
+    code = '(' + method.toString().replace(/[ \t\n]+/g, ' ') + ')()'
+    SpecCompiler = require './spec_compiler'
+    compiler = new SpecCompiler()
+    # compiler.debug = true
+    try
+      compiler.fullPath = 'tmp.js'
+      compiler.compile code
+    catch err
+      console.log 'Error trying to compile Spec'
+      console.error err.stack
+      null
+
 
 # class Spec
 #   constructor: (options) ->

@@ -10,13 +10,14 @@ class Model
     Mongo.registerModel this
 
     # create dynamic finders
-    for index in @spec.indexes
-      this['by_' + index.fields[0].name] = (value) =>
+    create_finder = (index) =>
+      @['by_' + index.fields[0].name] = (value) =>
         query = {}
         query[index.fields[0].name] = value
         new Query @collection, @spec, query
+    create_finder index for index in @spec.indexes
 
-    this[k] = v for k, v of @spec.statics
+    @[k] = v for k, v of @spec.statics
 
   count: (callback) ->
     @collection.count callback
@@ -61,3 +62,4 @@ class Model
 
 module.exports = Model
 module.exports.Type = Type
+module.exports.Spec = Spec

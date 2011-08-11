@@ -1,4 +1,9 @@
 Type = require('caboose').Model.Type
+Spec = require('caboose').Model.Spec
+
+field = () ->
+  console.log 'field'
+  console.log argument
 
 exports.Document = class Document extends Type
   @type: 'Document'
@@ -6,6 +11,12 @@ exports.Document = class Document extends Type
   constructor: (spec, options) ->
     super spec, options
 
+    if @options.spec?
+      if typeof @options.spec is 'function'
+        @options.spec = Spec.compile @options.spec
+      else if typeof @options.spec is 'object' and @options.spec.type is 'model'
+        @options.spec = @options.spec.spec
+      
   to_plain: (old_doc, new_doc, value) ->
     super old_doc, new_doc, value
     

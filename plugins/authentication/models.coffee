@@ -41,7 +41,7 @@ exports.compiler =
           bcrypt.compare password, user[auth.password_field], (err, result) =>
             return callback err unless result
             
-            if auth.token_field? not user[auth.token_field]?
+            if auth.token_field? and not user[auth.token_field]?
               user[auth.token_field] = generate_token 32
               query = {}
               query[auth.username_field] = username
