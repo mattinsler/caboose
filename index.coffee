@@ -28,12 +28,11 @@ exports.start = (run_path, options) ->
     console.log "Listening on port #{app.address().port}"
 
 exports.test = (run_path, options) ->
+  vows = require 'vows'
   create_and_initialize_app options, (app) ->
     if options._.length > 0
-      for name in options._
-        suite = require path.join(app.paths.test, name)
-        suite.User.run {}, (result) ->
-          console.dir result
+      require path.join(app.paths.test, name) for name in options._
+      vows.suites[0].run {}, -> process.exit()
 
 exports.run = (run_path, options) ->
   return console.log 'USAGE: caboose run script_filename' if options._.length isnt 1
