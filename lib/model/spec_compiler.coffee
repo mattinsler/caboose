@@ -10,6 +10,8 @@ Spec = require './spec'
 #     v model for v in validators
 
 class SpecCompiler extends Compiler
+  constructor: -> super()
+  
   add_field: (name, options) ->
     options.name = name
     options.key ?= name
