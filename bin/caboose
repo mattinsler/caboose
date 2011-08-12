@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('coffee-script');
+
 var sys = require('sys')
   , caboose = require('caboose');
 
