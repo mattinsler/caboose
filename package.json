@@ -1,17 +1,25 @@
 {
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose",
-  "description": "Rails-ish Web-Services",
+  "description": "Rails-ish MVC Framework in Coffeescript",
   "version": "0.1.0",
-  "main": "index",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mattinsler/caboose.git"
+  },
   "engines": {
-    "node": "*"
+    "node": ">= 0.4.0"
   },
   "dependencies": {
-    "express": "2.3.x",
-    "mongodb": "0.9.x"
+    "express": "2.3.12",
+    "mongodb": "0.9.6-10",
+    "optimist": "0.2.6"
   },
   "devDependencies": {
     "vows": "0.5.8"
+  },
+  "bin": {
+    "caboose": "./bin/caboose"
   }
+  "main": "index",
 }
