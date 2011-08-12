@@ -20,6 +20,6 @@
   },
   "bin": {
     "caboose": "./bin/caboose"
-  }
-  "main": "index",
+  },
+  "main": "index"
 }
