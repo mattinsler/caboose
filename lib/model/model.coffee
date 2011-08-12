@@ -44,7 +44,7 @@ class Model
     @collection.update fixedQuery, fixedUpdate, (err) =>
       callback and callback err
     
-  @Timestamp: mongodb.BSONNative.Timestamp
+  @Timestamp: mongodb.BSONNative?.Timestamp ? mongodb.BSONPure.Timestamp
 
   @connect: -> Mongo.connect.apply Mongo, arguments
   
