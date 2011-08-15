@@ -8,9 +8,12 @@ module.exports = class Router
     @server.use express.bodyParser()
     @server.use express.methodOverride()
     @server.use express.cookieParser()
-    @server.use express.session secret: 'some kind of random string'
+    @server.use express.session(secret: 'some kind of random string')
     @server.use @server.router
+    @server.use express.compiler(src: paths.public, dest: paths.public, enable: ['coffeescript'])
     @server.use express.static paths.public
+    
+    @server.enable 'jsonp callback'
 
     @server.error = (err, req, res) ->
       console.error err.stack if err
@@ -19,7 +22,7 @@ module.exports = class Router
   add: (route) ->
     path = route.path
     path += '.:format?' unless path[path.length - 1] is '/'
-    console.log "#{route.method} #{path}"
+    console.log "#{route.method} #{path} (#{route.controllerFactory.filters.length} filter(s) on controller)"
     @server[route.method] path, (req, res, next) ->
       route.respond req, res, next
 

@@ -15,7 +15,7 @@ function usage() {
     '  run script     Run script',
     'options:',
     '  -h, --help     Show the help'
-  ]).join('\n');
+  ].join('\n'));
   process.exit(1);
 }
 

@@ -11,7 +11,7 @@ class Controller
       return @error err if err?
       return this[action].call this if x is @_filters.length
       filter = @_filters[x++]
-      return next() if filter.only? and action in filter.only
+      return next() if filter.only? and not (action in filter.only)
       if typeof filter.method is 'string'
         this[filter.method].call this, next
       else if typeof filter.method is 'function'
@@ -20,8 +20,10 @@ class Controller
 
   error: (err) ->
     @_responder.next err
-  render: (data) ->
-    @_responder.render (data ? this)
+  unauthorized: ->
+    @_responder.unauthorized.apply @_responder, arguments
+  render: (data, options) ->
+    @_responder.render (data ? this), options
   redirect_to: (url, options) ->
     if options?.notice?
       @session.flash ?= {}
@@ -34,6 +36,8 @@ class Controller
   # options: httpOnly, secure, expires, maxAge
   set_cookie: (name, value, options) ->
     @_responder.res.cookie name, value, options
+  set_headers: (headers) ->
+    @_responder.set_headers {headers: headers}
     
   clear_cookie: (name) ->
     @_responder.res.clearCookie name

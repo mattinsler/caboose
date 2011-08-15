@@ -19,8 +19,8 @@ class ControllerFactoryCompiler extends Compiler
     @scope.before_filter = (filter) =>
       if typeof filter in ['string', 'function']
         @filters.push method: filter, only: null
-      else if typeof filter is 'object' and typeof filter.filter? is 'string'
-        @filters.push method: filter.filter, only: filter.only
+      else if typeof filter is 'object' and filter.method? and typeof filter.method in ['string', 'function']
+        @filters.push method: filter.method, only: filter.only
         
     @apply_scope_plugins 'controllers'
     @apply_precompile_plugins 'controllers'

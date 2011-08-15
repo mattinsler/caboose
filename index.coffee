@@ -11,7 +11,8 @@ create_and_initialize_app = (options, callback) ->
     app.initialize config
     callback app
 
-  app = global.app = new Application()
+  app = new Application()
+  global.app = app
   app.paths = require('./lib/paths').get('./app')
 
   # read config

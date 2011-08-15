@@ -17,6 +17,8 @@ class ControllerFactory
     controller._extends = @extends
     controller._filters = @filters
     controller._responder = responder
+    controller.request = responder.req
+    controller.response = responder.res
     controller.cookies = responder.req.cookies
     controller.session = responder.req.session
     controller.body = responder.req.body
