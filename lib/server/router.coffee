@@ -10,7 +10,7 @@ module.exports = class Router
     @server.use express.cookieParser()
     @server.use express.session(secret: 'some kind of random string')
     @server.use @server.router
-    @server.use express.compiler(src: paths.public, dest: paths.public, enable: ['coffeescript'])
+    @server.use express.compiler(src: paths.public, dest: paths.public, enable: ['coffeescript', 'less'])
     @server.use express.static paths.public
     
     @server.enable 'jsonp callback'

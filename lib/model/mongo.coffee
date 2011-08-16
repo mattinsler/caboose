@@ -16,7 +16,11 @@ class Mongo
     [host, port, dbName] = parse connectionString
     
     if not @db
-      @db = new mongodb.Db dbName, new mongodb.Server(host, port), native_parser: true
+      try
+        server = new mongodb.Server(host, port), native_parser: true
+      catch e
+        server = new mongodb.Server(host, port)
+      @db = new mongodb.Db dbName, server
     @db.open (err, db) =>
       console.error err.stack if err?
       @registerModel m for m in @models if not err?
