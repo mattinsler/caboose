@@ -17,10 +17,10 @@ class Mongo
     
     if not @db
       try
-        server = new mongodb.Server(host, port), native_parser: true
+        @db = new mongodb.Db dbName, new mongodb.Server(host, port), native_parser: true
       catch e
-        server = new mongodb.Server(host, port)
-      @db = new mongodb.Db dbName, server
+        @db = new mongodb.Db dbName, new mongodb.Server(host, port)
+      
     @db.open (err, db) =>
       console.error err.stack if err?
       @registerModel m for m in @models if not err?
