@@ -12,7 +12,7 @@ get_with_base = (base, filename, moduleName) ->
         plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
         console.log "Installing plugin #{file}.#{filename}"
       catch e
-        # console.error e.stack
+        console.error e.stack
   plugins
 
 exports.get = (filename, moduleName) ->
