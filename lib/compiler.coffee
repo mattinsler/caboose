@@ -65,6 +65,8 @@ module.exports = class Compiler
       coffee = require 'coffee-script'
       @code = coffee.compile @code, filename: @fullPath
     
+    console.dir @scope
+    
     console.log @code if @debug
     vm.runInNewContext @code, @scope, @fullPath
     
