@@ -5,15 +5,12 @@ class Mongo
     @models = []
 
   connect: (connectionString, callback) ->
-    parse = (cs) ->
-      parts = /^mongodb:\/\/([^:/]+)(:([0-9]+))?(\/(.+))?$/.exec cs
-      return null if not parts?
-      [
-        parts[1],
-        (parseInt parts[3] if parts[3]?) ? 27017,
-        parts[5] ? ''
-      ]
-    [host, port, dbName] = parse connectionString
+    uri = require('url').parse connectionString
+    host = uri.hostname
+    port = uri.port ? 27017
+    dbName = uri.pathname.replace /\//g, ''
+    if uri.auth?
+      [user, password] = uri.auth.split ':'
     
     if not @db
       try
@@ -24,7 +21,11 @@ class Mongo
     @db.open (err, db) =>
       console.error err.stack if err?
       @registerModel m for m in @models if not err?
-      callback? err, db
+      if user? and password?
+        @db.authenticate user, pass, =>
+          callback? err, @db
+      else
+        callback? err, @db
   close: ->
     @db.close()
     
