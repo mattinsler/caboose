@@ -8,8 +8,8 @@ class Route
     @path = spec.path
 
   respond: (req, res, next) ->
-    format = req.params.format ? 'html'
-    return res.send 404 if @controllerFactory.responds_to? and format not in @controllerFactory.responds_to
+    req.params.format ?= 'html'
+    return res.send 404 if @controllerFactory.responds_to? and req.params.format not in @controllerFactory.responds_to
     
     responder = new Responder @layoutFactory, @viewFactory, req, res, next
     controller = @controllerFactory.create responder

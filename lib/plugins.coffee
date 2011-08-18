@@ -3,12 +3,14 @@ path = require 'path'
 paths = require('./paths').get()
 
 get_with_base = (base, filename, moduleName) ->
+  console.log "Getting #{filename}.#{moduleName} plugins from #{base}"
   plugins = []
   if path.existsSync base
     for file in fs.readdirSync base
       try
         pluginModule = require path.join(base, file, filename)
         plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
+        console.log "Installing plugin #{file}.#{filename}"
       catch e
         # console.error e.stack
   plugins
