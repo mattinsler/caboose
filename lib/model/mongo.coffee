@@ -22,7 +22,7 @@ class Mongo
       console.error err.stack if err?
       @registerModel m for m in @models if not err?
       if user? and password?
-        @db.authenticate user, pass, =>
+        @db.authenticate user, password, =>
           callback? err, @db
       else
         callback? err, @db
