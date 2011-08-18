@@ -5,16 +5,15 @@ generate_token = (length) ->
   rbytes.randomBytes(length).toHex()
 
 exports.compiler =
-  scope: {
-    authenticate_using: (username_field, password_field) ->
+  precompile: ->
+    @scope.authenticate_using = (username_field, password_field) =>
       @_authentication ?= {}
       @_authentication.username_field = username_field
       @_authentication.password_field = password_field
     
-    authenticate_with_token: (token_field) ->
+    @scope.authenticate_with_token = (token_field) =>
       @_authentication ?= {}
       @_authentication.token_field = token_field
-  }
 
   postcompile: ->
     auth = @_authentication
