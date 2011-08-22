@@ -64,9 +64,7 @@ module.exports = class Compiler
     if /\.coffee$/.test @fullPath
       coffee = require 'coffee-script'
       @code = coffee.compile @code, filename: @fullPath
-    
-    console.log Object.keys(@scope)
-    
+
     console.log @code if @debug
     vm.runInNewContext @code, @scope, @fullPath
     

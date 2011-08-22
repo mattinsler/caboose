@@ -13,6 +13,8 @@ function usage() {
     '  start          Start server',
     '  test script    Test with script in test directory',
     '  run script     Run script',
+    '  console        Open a javascript console with your app loaded',
+    '  routes         Print out routes',
     'options:',
     '  -h, --help     Show the help'
   ].join('\n'));

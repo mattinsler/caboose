@@ -49,6 +49,7 @@ class Responder
     try
       renderer data
     catch err
+      console.dir err.stack
       @next err
     
     # return res.send 404 if not @view?.htmlTemplate?

@@ -47,3 +47,12 @@ exports.console = (run_path, options) ->
     repl = require 'repl'
     repl.start()
     # console.log repl
+
+exports.routes = (run_path, options) ->
+  create_and_initialize_app options, (app) ->
+    r = []
+    for k, route of app.routes.routes
+      r.push route
+    cliff = require 'cliff'
+    # console.log r
+    console.log cliff.stringifyObjectRows(r, ['method', 'path', 'controller', 'action'])
