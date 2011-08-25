@@ -1,7 +1,7 @@
 ejs = require 'ejs'
 
 class Responder
-  constructor: (@layoutFactory, @viewFactory, @req, @res, @next) ->
+  constructor: (@req, @res, @next) ->
     @_renderers = {
       html: (data) =>
         html = @render_html data
@@ -20,6 +20,10 @@ class Responder
       }
     }
     locals[k] = v for k, v of data
+
+    # layoutFactory = global.registry.get "#layout_view"
+    # viewFactory = global.registry.get "#{spec.controller}##{spec.action}_view"
+    viewFactory = global.registry.get 
 
     view = @viewFactory.create()
     html = ejs.render view.html.template, {

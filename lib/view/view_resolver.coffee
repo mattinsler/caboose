@@ -1,0 +1,2 @@
+exports.resolve = (view) ->
+  caboose
