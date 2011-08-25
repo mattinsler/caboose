@@ -11,32 +11,7 @@ if not global.Caboose?
 exports.cli = require './lib/cli'
 # 
 # exports.Model = require './lib/model/model'
-# exports.get = (name) ->
-#   require('./lib/paths').get('./app')
-#   require('./lib/registry').get name
-# 
-# create_and_initialize_app = (options, callback) ->
-#   next = ->
-#     app.initialize config
-#     callback app
-# 
-#   app = new Application()
-#   global.app = app
-#   app.paths = require('./lib/paths').get('./app')
-# 
-#   # read config
-#   config = {}
-#   applicationConfig = require path.join app.paths.config, 'application'
-#   if applicationConfig?
-#     applicationConfig config, next
-#   else
-#     next()
-# 
-# exports.start = (run_path, options) ->
-#   create_and_initialize_app options, (app) ->
-#     app.listen()
-#     console.log "Listening on port #{app.address().port}"
-# 
+
 # exports.test = (run_path, options) ->
 #   vows = require 'vows'
 #   create_and_initialize_app options, (app) ->

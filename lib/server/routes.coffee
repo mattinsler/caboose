@@ -48,4 +48,4 @@ Routes.create = (routesPath) ->
   if path.existsSync routesPath
     routesMethod = require routesPath
     routesMethod.call routes
-  routes
+  routes.routes

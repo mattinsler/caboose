@@ -32,7 +32,6 @@ module.exports = class Application
     next = ->
       return callback() if index is files.length
       try
-        console.log path.join(initializers_path, files[index])
         require(path.join(initializers_path, files[index++])) next
       catch e
         return callback(e)
@@ -58,7 +57,7 @@ module.exports = class Application
         if err?
           console.error err.stack
           process.exit 1
-        c() for c in @_state.callbacks
+        c(this) for c in @_state.callbacks
         @_state.initialized = true
         delete @_state.initializing
         delete @_state.callbacks
@@ -68,6 +67,10 @@ module.exports = class Application
     # 
     # @routes = Routes.create path.join(@paths.config, 'routes.coffee')
     # @router = Router.create @http, @routes
+  
+  # boot the web engine
+  boot: ->
+    
     
   listen: ->
     @http.listen @config.http.port
