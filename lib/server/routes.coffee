@@ -45,7 +45,6 @@ module.exports = class Routes
       
 Routes.create = (routesPath) ->
   routes = new Routes()
-  if path.existsSync routesPath
-    routesMethod = require routesPath
-    routesMethod.call routes
+  routesMethod = require routesPath
+  routesMethod.call routes
   routes.routes

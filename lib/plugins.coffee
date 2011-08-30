@@ -1,6 +1,5 @@
 fs = require 'fs'
 path = require 'path'
-paths = require('./paths').get()
 
 get_with_base = (base, filename, moduleName) ->
   # console.log "Getting #{filename}.#{moduleName} plugins from #{base}"
@@ -18,7 +17,7 @@ get_with_base = (base, filename, moduleName) ->
 
 exports.get = (filename, moduleName) ->
   plugins = get_with_base path.join(__dirname, '../plugins'), filename, moduleName
-  plugins = plugins.concat(get_with_base paths.plugins, filename, moduleName) if paths?.plugins?
+  plugins = plugins.concat(get_with_base Caboose.path.plugins, filename, moduleName)
   
   result = {}
   for plugin in plugins

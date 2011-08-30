@@ -1,23 +1,23 @@
 path = require 'path'
 Responder = require './responder'
+ControllerFactory = require '../controller/controller_factory'
 
 class Route
-  constructor: (spec, @controllerFactory) ->
-    @method = spec.method
-    @action = spec.action
-    @path = spec.path
+  constructor: (@spec) ->
+    @method = @spec.method
+    @path = @spec.path
+    @controller = @spec.controller
+    @action = @spec.action
 
   respond: (req, res, next) ->
     req.params.format ?= 'html'
-    return res.send 404 if @controllerFactory.responds_to? and req.params.format not in @controllerFactory.responds_to
+    
+    controller_factory = ControllerFactory.compile path.join(Caboose.path.controllers, "#{@controller}_controller.coffee")
+    return res.send 404 if not controller_factory
+    return res.send 404 if controller_factory.responds_to? and req.params.format not in controller_factory.responds_to
     
     responder = new Responder req, res, next
-    controller = @controllerFactory.create responder
+    controller = controller_factory.create responder
     controller.execute @action
-
-  @create: (spec) ->
-    controllerFactory = global.registry.get "#{spec.controller}_controller"
-    return null unless controllerFactory?
-    new Route spec, controllerFactory
 
 module.exports = Route

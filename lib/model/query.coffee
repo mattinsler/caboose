@@ -1,8 +1,5 @@
-util = require 'util'
-Spec = require './spec'
-
 module.exports = class Query
-  constructor: (@collection, @spec, @query) ->
+  constructor: (@collection, @query) ->
     @query ?= {}
     @options = {}
 
@@ -14,38 +11,25 @@ module.exports = class Query
     @options.limit = count
     this
 
-  sort: () ->
+  sort: (fields) ->
+    @options.sort = fields
     this
 
   each: (callback) ->
-    # query = @spec.filter @query, Spec.NameToKey
-    query = @spec.to_query @query
-    console.log "Query: #{util.inspect(query)}" if app.config.model?.debug?
-    @collection.find(query, @options).each (err, item) =>
+    @collection.find(@query, @options).each (err, item) =>
       return callback err if err?
-      # callback null, @spec.wrap item
-      callback null, @spec.from_server item
+      callback null, item
 
   array: (callback) ->
-    # query = @spec.filter @query, Spec.NameToKey
-    query = @spec.to_query @query
-    console.log "Query: #{util.inspect(query)}" if app.config.model?.debug?
-    @collection.find(query, @options).toArray (err, items) =>
+    @collection.find(@query, @options).toArray (err, items) =>
       return callback err if err?
-      # callback null, (@spec.wrap i for i in items)
-      callback null, (@spec.from_server i for i in items)
+      callback null, items
 
   first: (callback) ->
-    # query = @spec.filter @query, Spec.NameToKey
-    query = @spec.to_query @query
-    console.log "Query: #{util.inspect(query)}" if app.config.model?.debug?
     @options.limit = 1
-    @collection.find(query, @options).nextObject (err, item) =>
+    @collection.find(@query, @options).nextObject (err, item) ->
       return callback err if err?
-      # callback null, @spec.wrap item
-      callback null, @spec.from_server item
+      callback null, item
   
   count: (callback) ->
-    query = @spec.to_query @query
-    console.log "Query: #{util.inspect(query)}" if app.config.model?.debug?
-    @collection.count query, callback
+    @collection.count @query, callback

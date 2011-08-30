@@ -1,2 +1,0 @@
-exports.resolve = (view) ->
-  caboose

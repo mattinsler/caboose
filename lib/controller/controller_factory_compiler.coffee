@@ -29,7 +29,9 @@ class ControllerFactoryCompiler extends Compiler
     @apply_postcompile_plugins 'controllers'
   
   respond: ->
-    @response = new ControllerFactory @name, @extends, @scope.class, @filters
+    short_name = /\/([^\/.]+)\_controller.coffee$/.exec(@fullPath)[1]
+    
+    @response = new ControllerFactory @name, short_name, @extends, @scope.class, @filters
     @apply_respond_plugins 'controllers'
     @response
     

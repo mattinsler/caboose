@@ -1,8 +1,8 @@
 fs = require 'fs'
 path = require 'path'
 express = require 'express'
+Route = require './server/route'
 Routes = require './server/routes'
-Router = require './server/router'
 
 module.exports = class Application
   constructor: ->
@@ -13,8 +13,8 @@ module.exports = class Application
     @config = {}
     index = 0
     files = [
-      path.join(Caboose.root, 'config', 'application'),
-      path.join(Caboose.root, 'config', 'environments', Caboose.env)
+      path.join(Caboose.path.config, 'application'),
+      path.join(Caboose.path.config, 'environments', Caboose.env)
     ]
     next = =>
       return callback() if index is files.length
@@ -40,7 +40,7 @@ module.exports = class Application
   run_initializers: (callback) ->
     @run_initializers_in_path path.join(__dirname, 'initializers'), (err) =>
       return callback(err) if err?
-      @run_initializers_in_path path.join(Caboose.root, 'config', 'initializers'), callback
+      @run_initializers_in_path path.join(Caboose.path.config, 'initializers'), callback
 
   initialize: (callback) ->
     return callback() if @_state.initialized
@@ -48,6 +48,8 @@ module.exports = class Application
 
     @_state.initializing = true
     @_state.callbacks = [callback]
+    
+    @routes = Routes.create path.join Caboose.path.config, 'routes'
       
     @configure (err) =>
       if err?
@@ -61,19 +63,28 @@ module.exports = class Application
         @_state.initialized = true
         delete @_state.initializing
         delete @_state.callbacks
-    
-    # @config = config
-    # @http = express.createServer() if config.http
-    # 
-    # @routes = Routes.create path.join(@paths.config, 'routes.coffee')
-    # @router = Router.create @http, @routes
   
   # boot the web engine
-  boot: ->
+  boot: (callback) ->
+    return callback() if not @config.http.enabled
+    @http = express.createServer()
     
+    middleware = require path.join(Caboose.path.config, 'middleware')
+    middleware @http
     
-  listen: ->
+    add_route = (route) =>
+      path = route.path
+      path += '.:format?' unless path[path.length - 1] is '/'
+      console.log "#{route.method} #{path}"
+      @http[route.method] path, (req, res, next) ->
+        route.respond req, res, next
+
+    for k, spec of @routes
+      route = new Route spec
+      add_route route if route?
+      
     @http.listen @config.http.port
+    callback()
     
   address: ->
     @http.address()

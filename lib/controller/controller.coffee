@@ -5,6 +5,7 @@ class Controller
 
   execute: (action) ->
     throw new Error "Could not find #{action} in #{@_name}" if not this[action]?
+    @_action = action
     
     x = 0
     next = (err) =>
@@ -22,8 +23,19 @@ class Controller
     @_responder.next err
   unauthorized: ->
     @_responder.unauthorized.apply @_responder, arguments
-  render: (data, options) ->
-    @_responder.render (data ? this), options
+  render: (view, data, options) ->
+    if arguments.length is 0
+      @_view = @_action
+      data = this
+    else if typeof view is 'string'
+      @_view = view
+      data ?= this
+    else
+      @_view = @_action
+      options = data
+      data = view
+      
+    @_responder.render this, data, options
   redirect_to: (url, options) ->
     if options?.notice?
       @session.flash ?= {}
