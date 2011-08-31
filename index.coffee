@@ -5,10 +5,7 @@ if not global.Caboose?
   global.Caboose = {
     root: process.cwd()
     env: process.env.caboose_env ? 'development'
-    app: new Application()
-    registry: require './lib/registry'
   }
-  
   global.Caboose.path = {
     app: path.join global.Caboose.root, 'app'
     config: path.join global.Caboose.root, 'config'
@@ -21,6 +18,9 @@ if not global.Caboose?
   global.Caboose.path.models = path.join global.Caboose.path.app, 'models'
   global.Caboose.path.helpers = path.join global.Caboose.path.app, 'helpers'
   global.Caboose.path.views = path.join global.Caboose.path.app, 'views'
+
+  global.Caboose.registry = require './lib/registry'
+  global.Caboose.app = new Application()
 
 exports.cli = require './lib/cli'
 exports.model = require './lib/model'

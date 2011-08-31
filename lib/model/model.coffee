@@ -1,21 +1,21 @@
 Query = require './query'
 
-module.exports = class Model
-  constructor: (@collection) ->
+class Model
+  @first: (callback) ->
+    new Query(@_collection).first callback
   
-  first: (callback) ->
-    new Query(@collection).first callback
-  
-  where: (query) ->
-    new Query @collection, query
+  @where: (query) ->
+    new Query @_collection, query
 
-  save: (doc, callback) ->
-    @collection.save doc, (err) ->
+  @save: (doc, callback) ->
+    @_collection.save doc, (err) ->
       console.log 'saved'
       console.log doc
       return callback and callback err if err?
       callback and callback null, doc
 
-  update: (query, update, callback) ->
-    @collection.update query, update, (err) =>
+  @update: (query, update, callback) ->
+    @_collection.update query, update, (err) =>
       callback and callback err
+
+module.exports = Model

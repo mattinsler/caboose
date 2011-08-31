@@ -2,6 +2,8 @@ path = require 'path'
 Model = require './model'
 ControllerFactory = require './controller/controller_factory'
 
+cache = {}
+
 split = (name) ->
   start = 0
   parts = []
@@ -17,12 +19,14 @@ split = (name) ->
   parts
 
 exports.get = (name) ->
-  if /Controller$/.test(name)
-    parsed = split name
-    ControllerFactory.compile path.join(Caboose.path.controllers, parsed.join('_') + '.coffee')
-  else
-    parsed = split name
-    Model.model parsed.join('_')
+  if not cache[name]?
+    if /Controller$/.test(name)
+      parsed = split name
+      cache[name] = ControllerFactory.compile path.join(Caboose.path.controllers, parsed.join('_') + '.coffee')
+    else
+      parsed = split name
+      cache[name] = Model.model parsed.join('_')
+  cache[name]
 
 
 # path = require 'path'
