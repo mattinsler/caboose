@@ -1,20 +1,15 @@
 Model = require './model'
 
-if Caboose?.config?
-  Caboose.config.model ?= {}
-  Caboose.config.model.builder ?= {}
-  plugins = Caboose.config.model.builder.plugins = {}
-else
-  plugins = {}
-
-plugins.store_in = {
-  post_build: (collection_name) ->
-    @model._collection_name = collection_name
-}
-
 class Builder
+  @plugins = {
+    store_in: {
+      post_build: (collection_name) ->
+        @model._collection_name = collection_name
+    }
+  }
+  
   constructor: (@name) ->
-    for field in Object.keys(plugins)
+    for field in Object.keys(Builder.plugins)
       do (field) =>
         this[field] = ->
           @properties[field] = Array::slice.call arguments
@@ -23,11 +18,15 @@ class Builder
     @statics = {}
     @methods = {}
     @properties = {}
+    @_before_save = []
   static: (name, method) ->
     @statics[name] = method
     this
   method: (name, method) ->
     @methods[name] = method
+    this
+  before_save: (method) ->
+    @_before_save.push method
     this
 
   build: ->
@@ -40,6 +39,7 @@ class Builder
         super(collection)
     @model._name = @name
     @model._properties = @properties
+    @model._before_save = @_before_save
     for k, v of @methods
       @model::[k] = v
     for k, v of @statics

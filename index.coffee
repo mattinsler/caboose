@@ -25,6 +25,11 @@ if not global.Caboose?
 exports.cli = require './lib/cli'
 exports.model = require './lib/model'
 exports.registry = global.Caboose.registry
+
+
+
+
+
 # 
 # exports.Model = require './lib/model/model'
 
