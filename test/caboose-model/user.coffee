@@ -13,10 +13,11 @@ User = Model.create('User')
   .static('get_current', ->
     
   )
-  .method('foobar', ->)
   .build()
 
-# console.dir User
+# user = new User email: 'matt.insler@gmail.com'
+# user.change_password 'password'
+# user.save()
 
 # User.save {
 #   email: 'matt.insler@gmail.com'
@@ -26,3 +27,4 @@ User = Model.create('User')
 User.authenticate 'matt.insler@gmail.com', 'password', (err, user) ->
   return console.error err.stack if err?
   console.dir user
+  user.remove()

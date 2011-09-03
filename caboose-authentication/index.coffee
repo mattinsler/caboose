@@ -4,13 +4,13 @@ rbytes = require 'rbytes'
 module.exports = (objs) ->
   objs.Builder.plugins.authenticate_using = {
     pre_build: (username_field, password_field) ->
-      @before_save (doc, next) ->
-        return next() if not doc[password_field]?
-        bcrypt.gen_salt 10, (err, salt) ->
-          bcrypt.encrypt doc[password_field], salt, (err, hash) ->
-            doc[password_field] = hash
-            next()
-
+      @static 'encrypt_password', (value) ->
+        salt = bcrypt.gen_salt_sync 10
+        bcrypt.encrypt_sync value, salt
+      
+      @method "change_#{password_field}", (value) ->
+        @[password_field] = @_type.encrypt_password value
+        
       @static 'authenticate', (username, password, callback) ->
         query = {}
         query[username_field] = username
@@ -22,12 +22,10 @@ module.exports = (objs) ->
 
             if @_properties.authenticate_with_token? and not user[@_properties.authenticate_with_token[0]]?
               token_field = @_properties.authenticate_with_token[0]
-              user[token_field] = module.exports.generate_token 32
-              query = {}
-              query[username_field] = username
-              update = {}
-              update[token_field] = user[token_field]
-              @update query, {$set: update}
+              if not user[token_field]?
+                update = {}
+                user[token_field] = update[token_field] = module.exports.generate_token 32
+                user.update {$set: update}
 
             callback null, user
   }

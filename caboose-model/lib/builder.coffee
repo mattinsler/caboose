@@ -34,17 +34,21 @@ class Builder
     for k, v of @properties
       Builder.plugins[k].pre_build.apply this, v if Builder.plugins[k].pre_build?
 
-    @model = class extends Model
-      constructor: (collection) ->
-        super(collection)
-    @model._name = @name
-    @model._properties = @properties
-    @model._before_save = @_before_save
+    model = class extends Model
+      constructor: ->
+        super
+        @init()
+    model::init = ->
+      Object.defineProperty this, '_type', value: model
+    model._name = @name
+    model._properties = @properties
+    model._before_save = @_before_save
     for k, v of @methods
-      @model::[k] = v
+      model::[k] = v
     for k, v of @statics
-      @model[k] = v
+      model[k] = v
 
+    @model = model
     # post-build plugins
     for k, v of @properties
       Builder.plugins[k].post_build.apply this, v if Builder.plugins[k].post_build?

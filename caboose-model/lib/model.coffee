@@ -2,6 +2,20 @@ Query = require './query'
 Collection = require './collection'
 
 class Model
+  constructor: (doc) ->
+    this[k] = v for k, v of doc
+  
+  save: (callback) ->
+    @_type.save this, callback
+  
+  update: (update, callback) ->
+    return callback new Error 'Models must have an _id field in order to call update' unless @_id?
+    @_type.update {_id: @_id}, update, callback
+  
+  remove: (callback) ->
+    return callback new Error 'Models must have an _id field in order to call remove' unless @_id?
+    @_type.remove {_id: @_id}, callback
+  
   @_ensure_collection: (callback) ->
     callback() if @_collection
     Collection.create @_collection_name, (err, collection) ->
@@ -18,19 +32,32 @@ class Model
   @save: (doc, callback) ->
     @_ensure_collection (c) =>
       execute = ->
-        c.save doc, (err) ->
-          return callback and callback err if err?
-          callback and callback null, doc
+        return c.save(doc, {safe: true}, callback) if callback?
+        c.save doc
 
       index = 0
-      next = =>
+      next = (err) =>
+        return callback(err) if err?
         return execute() if index is @_before_save.length
         @_before_save[index++] doc, next
       next()
 
-  @update: (query, update, callback) ->
+  @update: (query, update, options, callback) ->
+    callback = options if options? and typeof options is 'function'
+    options or= {}
+    options.safe = true if callback?
     @_ensure_collection (c) ->
-      c.update query, update, (err) =>
-        callback and callback err
+      c.update query, update, options, callback
+
+  @update_multi: (query, update, callback) ->
+    @update query, update, {multi: true}, callback
+  
+  @upsert: (query, update, callback) ->
+    @update query, update, {upsert: true}, callback
+  
+  @remove: (query, callback) ->
+    @_ensure_collection (c) ->
+      return c.remove(query, {safe: true}, callback) if callback?
+      c.remove query
 
 module.exports = Model

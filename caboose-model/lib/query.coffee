@@ -19,20 +19,21 @@ module.exports = class Query
     @model._ensure_collection (c) =>
       c.find(@query, @options).each (err, item) =>
       return callback err if err?
-      callback null, item
+      callback null, new @model(item)
 
   array: (callback) ->
     @model._ensure_collection (c) =>
       c.find(@query, @options).toArray (err, items) =>
         return callback err if err?
+        i = new @model(i) for i in items
         callback null, items
 
   first: (callback) ->
     @model._ensure_collection (c) =>
       @options.limit = 1
-      c.find(@query, @options).nextObject (err, item) ->
+      c.find(@query, @options).nextObject (err, item) =>
         return callback err if err?
-        callback null, item
+        callback null, new @model(item)
   
   count: (callback) ->
     @model._ensure_collection (c) =>
