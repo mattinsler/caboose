@@ -4,7 +4,7 @@ Application = require './lib/application'
 if not global.Caboose?
   global.Caboose = {
     root: process.cwd()
-    env: process.env.caboose_env ? 'development'
+    env: process.env.CABOOSE_ENV ? 'development'
   }
   global.Caboose.path = {
     app: path.join global.Caboose.root, 'app'
