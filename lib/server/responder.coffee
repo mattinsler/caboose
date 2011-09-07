@@ -5,16 +5,16 @@ ViewFactory = require '../view/view_factory'
 class Responder
   constructor: (@req, @res, @next) ->
     @_renderers = {
-      html: (controller, data) =>
-        html = @render_html controller, data
+      html: (controller, data, options) =>
+        html = @render_html controller, data, options
         @res.contentType 'text/html'
         @res.send html, 200
-      json: (controller, data) =>
+      json: (controller, data, options) =>
         @res.contentType 'application/json'
         @res.send data, 200
     }
 
-  render_html: (controller, data) ->
+  render_html: (controller, data, options) ->
     http = Caboose.app.config.http
     locals = {
       server: {
@@ -28,16 +28,14 @@ class Responder
     # viewFactory = global.registry.get
     view_factory = ViewFactory.compile path.join(Caboose.path.views, controller._short_name, "#{controller._view}.html.ejs")
     layout_factory = ViewFactory.compile path.join(Caboose.path.views, 'layout.html.ejs')
-    
-    console.log "#{view_factory?} - #{layout_factory?}"
-    
+
     if view_factory?
       view = view_factory.create()
       html = ejs.render view.html.template, {
         locals: locals
         filename: view.html.filename
       }
-      if layout_factory?
+      if (not options? or not options.layout? or not options.layout is false) and layout_factory?
         layout = layout_factory.create()
         locals.yield = -> html
         layoutHtml = ejs.render layout.html.template, {
@@ -58,7 +56,7 @@ class Responder
     @set_headers options
     @res.send 404 unless renderer?
     try
-      renderer controller, data
+      renderer controller, data, options
     catch err
       console.dir err.stack
       @next err

@@ -46,18 +46,19 @@ module.exports = class Compiler
   compile: (code) ->
     @code = code
     @scope =
-      global: global
       process: process
       console: console
+    @scope[k] = v for k, v of global
     if @fullPath?
       @scope.require = (arg) =>
-        if /^\.{0,2}\//.test arg
-          require.call this, path.normalize(path.join path.dirname(@fullPath), arg)
+        if /^\.{1,2}\//.test arg
+          require.call this, path.normalize path.join(path.dirname(@fullPath), arg)
         else
           require.call this, arg
     else
       @fullPath = 'tmp.coffee'
-      @scope.require = require
+      @scope.require = (arg) =>
+        require.call this, arg
 
     @precompile()
     

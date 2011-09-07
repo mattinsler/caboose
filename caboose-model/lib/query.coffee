@@ -25,7 +25,7 @@ module.exports = class Query
     @model._ensure_collection (c) =>
       c.find(@query, @options).toArray (err, items) =>
         return callback err if err?
-        i = new @model(i) for i in items
+        items[x] = new @model(items[x]) for x in [0...items.length]
         callback null, items
 
   first: (callback) ->

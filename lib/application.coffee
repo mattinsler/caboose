@@ -45,12 +45,12 @@ module.exports = class Application
   initialize: (callback) ->
     return callback() if @_state.initialized
     return @_state.callbacks.push(callback) if @_state.initializing
-
+    
     @_state.initializing = true
     @_state.callbacks = [callback]
     
-    @routes = Routes.create path.join Caboose.path.config, 'routes'
-      
+    @routes = Routes.create path.join(Caboose.path.config, 'routes')
+    
     @configure (err) =>
       if err?
         console.error err.stack
@@ -75,7 +75,7 @@ module.exports = class Application
     add_route = (route) =>
       path = route.path
       path += '.:format?' unless path[path.length - 1] is '/'
-      console.log "#{route.method} #{path}"
+      # console.log "#{route.method} #{path}"
       @http[route.method] path, (req, res, next) ->
         route.respond req, res, next
 

@@ -1,3 +1,4 @@
+mongodb = require 'mongodb'
 Query = require './query'
 Collection = require './collection'
 
@@ -59,5 +60,16 @@ class Model
     @_ensure_collection (c) ->
       return c.remove(query, {safe: true}, callback) if callback?
       c.remove query
+
+field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
+try
+  new mongodb.Db 'test', new mongodb.Server('localhost', 27017), native_parser: true
+  bson = 'BSONNative'
+catch e
+  new mongodb.Db 'test', new mongodb.Server('localhost', 27017)
+  bson = 'BSONPure'
+
+for fn in field_names
+  Model[fn] = mongodb[bson][fn]
 
 module.exports = Model

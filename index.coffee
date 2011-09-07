@@ -23,7 +23,6 @@ if not global.Caboose?
   global.Caboose.app = new Application()
 
 exports.cli = require './lib/cli'
-exports.model = require './lib/model'
 exports.registry = global.Caboose.registry
 
 

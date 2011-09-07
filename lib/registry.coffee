@@ -1,33 +1,50 @@
 path = require 'path'
-Model = require './model'
 ControllerFactory = require './controller/controller_factory'
 
 cache = {}
+registered_getters = [{
+  get: (parsed_name) ->
+    return null if parsed_name[parsed_name.length - 1] isnt 'controller'
+    ControllerFactory.compile path.join(Caboose.path.controllers, parsed_name.join('_') + '.coffee')
+}]
 
 split = (name) ->
   start = 0
   parts = []
+  type = 0
+  
+  push = (segment_type, start_increment) ->
+    if type isnt segment_type
+      parts.push name.substring(start, x).toLowerCase() unless start is x
+      start = x + start_increment
+    type = segment_type
+  
   for x in [0...name.length]
     c = name[x]
     if not /[0-9a-zA-Z]/.test c
-      parts.push name.substring(start, x).toLowerCase() unless start is x
-      start = x + 1
+      push 1, 1
+    else if /[0-9]/.test c
+      push 2, 0
     else if c.toUpperCase() is c
-      parts.push name.substring(start, x).toLowerCase() unless start is x
-      start = x
+      push 3, 0
+    else
+      type = 0
   parts.push name.substring(start, name.length).toLowerCase() unless start is name.length
   parts
 
-exports.get = (name) ->
-  if not cache[name]?
-    if /Controller$/.test(name)
-      parsed = split name
-      cache[name] = ControllerFactory.compile path.join(Caboose.path.controllers, parsed.join('_') + '.coffee')
-    else
-      parsed = split name
-      cache[name] = Model.model parsed.join('_')
-  cache[name]
+exports.register = (getter) ->
+  registered_getters.push getter
 
+exports.get = (name) ->
+  parsed_name = split name
+  return cache[parsed_name] if cache[parsed_name]?
+  
+  for getter in registered_getters
+    obj = getter.get parsed_name
+    if obj?
+      cache[parsed_name] = obj
+      return obj
+  null
 
 # path = require 'path'
 # paths = require('./paths').get()

@@ -33,7 +33,7 @@ module.exports = (objs) ->
     pre_build: (token_field) ->
       @static 'authenticate_token', (token, callback) ->
         query = {}
-        query[auth.token_field] = token
+        query[token_field] = token
         @where(query).first callback
   }
 
