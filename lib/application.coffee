@@ -7,7 +7,11 @@ Routes = require './server/routes'
 module.exports = class Application
   constructor: ->
     @_state = {}
+    @_post_boot = []
     @registry = require './registry'
+
+  post_boot: (method) ->
+    @_post_boot.push method
 
   configure: (callback) ->
     @config = {}
@@ -82,8 +86,12 @@ module.exports = class Application
     for k, spec of @routes
       route = new Route spec
       add_route route if route?
-      
+
     @http.listen @config.http.port
+
+    for method in @_post_boot
+      method this
+
     callback()
     
   address: ->
