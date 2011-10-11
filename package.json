@@ -2,7 +2,7 @@
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose",
   "description": "Rails-ish MVC Framework in Coffeescript",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "repository": {
     "type": "git",
     "url": "git@github.com:mattinsler/caboose.git"
@@ -13,6 +13,7 @@
   "dependencies": {
     "coffee-script": "1.1.1",
     "ejs": "0.4.3",
+    "connect": "1.7.0",
     "express": "2.3.12",
     "cliff": "0.1.3",
     "switchback": "0.0.1"
