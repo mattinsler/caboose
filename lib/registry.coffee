@@ -6,6 +6,10 @@ registered_getters = [{
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'controller'
     ControllerFactory.compile path.join(Caboose.path.controllers, parsed_name.join('_') + '.coffee')
+}, {
+  get: (parsed_name) ->
+    return null if parsed_name[parsed_name.length - 1] isnt 'helper'
+    require path.join(Caboose.path.helpers, parsed_name.join('_'))
 }]
 
 split = (name) ->

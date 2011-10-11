@@ -35,7 +35,7 @@ class Responder
         locals: locals
         filename: view.html.filename
       }
-      if (not options? or not options.layout? or not options.layout is false) and layout_factory?
+      if layout_factory?
         layout = layout_factory.create()
         locals.yield = -> html
         layoutHtml = ejs.render layout.html.template, {
@@ -51,18 +51,22 @@ class Responder
       set_header k, v for k, v of options.headers
 
   render: (controller, data, options) ->
-    format = @req.params.format ? 'html'
+    format = @req.params.format
     renderer = @_renderers[format]
     @set_headers options
     @res.send 404 unless renderer?
     try
       renderer controller, data, options
     catch err
-      console.dir err.stack
+      console.error err.stack
       @next err
     
     # return res.send 404 if not @view?.htmlTemplate?
-    
+  
+  not_found: (err) ->
+    return @res.send err, 404 if err?
+    @res.send 404
+  
   unauthorized: (options) ->
     @set_headers options
     @res.send 401

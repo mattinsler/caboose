@@ -8,7 +8,7 @@ module.exports = (objs) ->
         salt = bcrypt.gen_salt_sync 10
         bcrypt.encrypt_sync value, salt
       
-      @method "change_#{password_field}", (value) ->
+      @instance "change_#{password_field}", (value) ->
         @[password_field] = @_type.encrypt_password value
         
       @static 'authenticate', (username, password, callback) ->

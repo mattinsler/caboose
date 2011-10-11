@@ -16,14 +16,14 @@ class Builder
           this
     
     @statics = {}
-    @methods = {}
+    @instance_methods = {}
     @properties = {}
     @_before_save = []
   static: (name, method) ->
     @statics[name] = method
     this
-  method: (name, method) ->
-    @methods[name] = method
+  instance: (name, method) ->
+    @instance_methods[name] = method
     this
   before_save: (method) ->
     @_before_save.push method
@@ -40,10 +40,11 @@ class Builder
         @init()
     model::init = ->
       Object.defineProperty this, '_type', value: model
+    model._type = model
     model._name = @name
     model._properties = @properties
     model._before_save = @_before_save
-    for k, v of @methods
+    for k, v of @instance_methods
       model::[k] = v
     for k, v of @statics
       model[k] = v

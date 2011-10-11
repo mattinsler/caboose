@@ -19,6 +19,8 @@ class Controller
         filter.method.call this, next
     next()
 
+  not_found: (err) ->
+    @_responder.not_found err
   error: (err) ->
     @_responder.next err
   unauthorized: ->
@@ -52,7 +54,9 @@ class Controller
     @_responder.set_headers {headers: headers}
     
   clear_cookie: (name) ->
-    @_responder.res.clearCookie name
+    @_responder.req.cookies[name] = null
+    # @_responder.res.clearCookie name
+    @_responder.res.cookie name, null
     
   stylesheet_link_tag: (filename) ->
     return '<link type="text/css" rel="stylesheet" href="/css/' + filename + '.css">'

@@ -72,13 +72,13 @@ module.exports = class Application
   boot: (callback) ->
     return callback() if not @config.http.enabled
     @http = express.createServer()
-    
+
     middleware = require path.join(Caboose.path.config, 'middleware')
     middleware @http
     
     add_route = (route) =>
       path = route.path
-      path += '.:format?' unless path[path.length - 1] is '/'
+      # path += '.:format?' unless path[path.length - 1] is '/'
       # console.log "#{route.method} #{path}"
       @http[route.method] path, (req, res, next) ->
         route.respond req, res, next
