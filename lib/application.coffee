@@ -1,5 +1,5 @@
 fs = require 'fs'
-path = require 'path'
+Path = require './path'
 express = require 'express'
 Route = require './server/route'
 Routes = require './server/routes'
@@ -17,34 +17,34 @@ module.exports = class Application
     @config = {}
     index = 0
     files = [
-      path.join(Caboose.path.config, 'application'),
-      path.join(Caboose.path.config, 'environments', Caboose.env)
+      Caboose.path.config.join('application'),
+      Caboose.path.config.join('environments', Caboose.env)
     ]
     next = =>
       return callback() if index is files.length
       try
-        require(files[index++]) @config, next
+        files[index++].require() @config, next
       catch e
         return callback(e) unless /Cannot find module/.test(e.message)
         next()
     next()
   
   run_initializers_in_path: (initializers_path, callback) ->
-    return callback() unless path.existsSync initializers_path
-    files = fs.readdirSync initializers_path
+    return callback() unless initializers_path.exists_sync()
+    files = initializers_path.readdir_sync()
     index = 0
     next = ->
       return callback() if index is files.length
       try
-        require(path.join(initializers_path, files[index++])) next
+        initializers_path.join(files[index++]).require() next
       catch e
         return callback(e)
     next()
     
   run_initializers: (callback) ->
-    @run_initializers_in_path path.join(__dirname, 'initializers'), (err) =>
+    @run_initializers_in_path new Path(__dirname).join('initializers'), (err) =>
       return callback(err) if err?
-      @run_initializers_in_path path.join(Caboose.path.config, 'initializers'), callback
+      @run_initializers_in_path Caboose.path.config.join('initializers'), callback
 
   initialize: (callback) ->
     return callback() if @_state.initialized
@@ -53,7 +53,7 @@ module.exports = class Application
     @_state.initializing = true
     @_state.callbacks = [callback]
     
-    @routes = Routes.create path.join(Caboose.path.config, 'routes')
+    @routes = Routes.create Caboose.path.config.join('routes')
     
     @configure (err) =>
       if err?
@@ -73,7 +73,7 @@ module.exports = class Application
     return callback() if not @config.http.enabled
     @http = express.createServer()
 
-    middleware = require path.join(Caboose.path.config, 'middleware')
+    middleware = Caboose.path.config.join('middleware').require()
     middleware @http
     
     add_route = (route) =>

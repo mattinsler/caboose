@@ -11,7 +11,7 @@ module.exports = (next) ->
   Caboose.registry.register {
     get: (parsed_name) ->
       try
-        return require path.join(Caboose.path.models, parsed_name.join('_'))
+        return Caboose.path.models.join(parsed_name.join('_')).require()
       catch e
         console.error e.stack
       null

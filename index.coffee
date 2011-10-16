@@ -1,29 +1,30 @@
-path = require 'path'
+Path = require './lib/path'
 Application = require './lib/application'
 
 if not global.Caboose?
-  global.Caboose = {
-    root: process.cwd()
+  Caboose = global.Caboose = {
+    root: new Path()
     env: process.env.CABOOSE_ENV ? 'development'
   }
-  global.Caboose.path = {
-    app: path.join global.Caboose.root, 'app'
-    config: path.join global.Caboose.root, 'config'
-    plugins: path.join global.Caboose.root, 'plugins'
-    public: path.join global.Caboose.root, 'public'
-    test: path.join global.Caboose.root, 'test'
-    temp: path.join global.Caboose.root, 'tmp'
+  Caboose.path = {
+    app: Caboose.root.join('app')
+    config: Caboose.root.join('config')
+    lib: Caboose.root.join('lib')
+    plugins: Caboose.root.join('plugins')
+    public: Caboose.root.join('public')
+    test: Caboose.root.join('test')
+    tmp: Caboose.root.join('tmp')
   }
-  global.Caboose.path.controllers = path.join global.Caboose.path.app, 'controllers'
-  global.Caboose.path.models = path.join global.Caboose.path.app, 'models'
-  global.Caboose.path.helpers = path.join global.Caboose.path.app, 'helpers'
-  global.Caboose.path.views = path.join global.Caboose.path.app, 'views'
+  Caboose.path.controllers = Caboose.path.app.join('controllers')
+  Caboose.path.models = Caboose.path.app.join('models')
+  Caboose.path.helpers = Caboose.path.app.join('helpers')
+  Caboose.path.views = Caboose.path.app.join('views')
 
-  global.Caboose.registry = require './lib/registry'
-  global.Caboose.app = new Application()
+  Caboose.registry = require './lib/registry'
+  Caboose.app = new Application()
 
 exports.cli = require './lib/cli'
-exports.registry = global.Caboose.registry
+exports.registry = Caboose.registry
 
 
 

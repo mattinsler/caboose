@@ -10,7 +10,7 @@ load_models = (callback) ->
   console.log '------------------------------'.grey
 
   models = []
-  for file in fs.readdirSync(Caboose.path.models)
+  for file in Caboose.path.models.readdir_sync()
     match = /^(.+)\.(js|coffee)$/.exec(file)
     if match?
       model = Caboose.registry.get match[1]

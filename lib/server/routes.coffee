@@ -1,5 +1,3 @@
-path = require 'path'
-
 module.exports = class Routes
   constructor: ->
     @routes = {}
@@ -45,6 +43,6 @@ module.exports = class Routes
       
 Routes.create = (routesPath) ->
   routes = new Routes()
-  routesMethod = require routesPath
+  routesMethod = routesPath.require()
   routesMethod.call routes
   routes.routes

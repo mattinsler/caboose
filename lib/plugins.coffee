@@ -1,13 +1,13 @@
 fs = require 'fs'
-path = require 'path'
+Path = require './path'
 
 get_with_base = (base, filename, moduleName) ->
   # console.log "Getting #{filename}.#{moduleName} plugins from #{base}"
   plugins = []
-  if path.existsSync base
-    for file in fs.readdirSync base
+  if base.exists_sync()
+    for file in base.readdir_sync()
       try
-        pluginModule = require path.join(base, file, filename)
+        pluginModule = base.join(file, filename).require()
         plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
         # console.log "Installing plugin #{file}.#{filename}"
       catch e
@@ -16,7 +16,7 @@ get_with_base = (base, filename, moduleName) ->
   plugins
 
 exports.get = (filename, moduleName) ->
-  plugins = get_with_base path.join(__dirname, '../plugins'), filename, moduleName
+  plugins = get_with_base new Path(__dirname).join('../plugins'), filename, moduleName
   plugins = plugins.concat(get_with_base Caboose.path.plugins, filename, moduleName)
   
   result = {}

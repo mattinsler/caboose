@@ -48,6 +48,7 @@ module.exports = class Compiler
     @scope =
       process: process
       console: console
+      Caboose: global.Caboose
     @scope[k] = v for k, v of global
     if @fullPath?
       @scope.require = (arg) =>

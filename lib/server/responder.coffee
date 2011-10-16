@@ -26,8 +26,8 @@ class Responder
     # layoutFactory = global.registry.get "#layout_view"
     # viewFactory = global.registry.get "#{spec.controller}##{spec.action}_view"
     # viewFactory = global.registry.get
-    view_factory = ViewFactory.compile path.join(Caboose.path.views, controller._short_name, "#{controller._view}.html.ejs")
-    layout_factory = ViewFactory.compile path.join(Caboose.path.views, 'layout.html.ejs')
+    view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
+    layout_factory = ViewFactory.compile Caboose.path.views.join('layout.html.ejs').toString()
 
     if view_factory?
       view = view_factory.create()

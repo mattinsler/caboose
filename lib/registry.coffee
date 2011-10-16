@@ -1,15 +1,14 @@
-path = require 'path'
 ControllerFactory = require './controller/controller_factory'
 
 cache = {}
 registered_getters = [{
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'controller'
-    ControllerFactory.compile path.join(Caboose.path.controllers, parsed_name.join('_') + '.coffee')
+    ControllerFactory.compile Caboose.path.controllers.join(parsed_name.join('_') + '.coffee').toString()
 }, {
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'helper'
-    require path.join(Caboose.path.helpers, parsed_name.join('_'))
+    Caboose.path.helpers.join(parsed_name.join('_')).require()
 }]
 
 split = (name) ->
