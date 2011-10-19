@@ -60,6 +60,17 @@ class Model
     @_ensure_collection (c) ->
       return c.remove(query, {safe: true}, callback) if callback?
       c.remove query
+  
+  @distinct: (key, callback) ->
+    new Query(this).distinct key, callback
+  
+  @find_and_modify: (options, callback) ->
+    opts = {}
+    for k in ['remove', 'new', 'upsert']
+      opts[k] = options[k] if options[k]
+    # collection.findAndModify(query, sort, update, options, callback)
+    @_ensure_collection (c) =>
+      c.findAndModify options.query, options.sort || [], options.update, opts, callback
 
 field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
 try

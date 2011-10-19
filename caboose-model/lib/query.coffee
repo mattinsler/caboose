@@ -14,6 +14,10 @@ module.exports = class Query
   sort: (fields) ->
     @options.sort = fields
     this
+  
+  fields: (fields) ->
+    @options.fields = fields
+    this
 
   each: (callback) ->
     @model._ensure_collection (c) =>
@@ -39,3 +43,7 @@ module.exports = class Query
   count: (callback) ->
     @model._ensure_collection (c) =>
       c.count @query, callback
+
+  distinct: (key, callback) ->
+    @model._ensure_collection (c) =>
+      c.distinct key, @query, callback

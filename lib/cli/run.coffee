@@ -1,4 +1,5 @@
 path = require 'path'
+require 'coffee-script'
 
 exports.description = 'Run a script'
 
