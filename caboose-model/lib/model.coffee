@@ -27,6 +27,9 @@ class Model
   @first: (callback) ->
     new Query(this).first callback
   
+  @count: (callback) ->
+    new Query(this).count callback
+  
   @where: (query) ->
     new Query this, query
 
