@@ -1,7 +1,7 @@
 ControllerFactory = require './controller/controller_factory'
 
-cache = {}
-registered_getters = [{
+cache = exports.cache = {}
+registered_getters = exports.registered_getters = [{
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'controller'
     ControllerFactory.compile Caboose.path.controllers.join(parsed_name.join('_') + '.coffee').toString()
