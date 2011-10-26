@@ -1,3 +1,5 @@
+_ = require 'underscore'
+
 exports.description = 'Start app server'
 
 load_models = (callback) ->
@@ -6,8 +8,15 @@ load_models = (callback) ->
     Caboose.registry.get(match[1]) if match?
   callback()
 
-exports.method = ->
+log_memory = ->
+  mem = process.memoryUsage()
+  console.log "[CABOOSE] RSS=#{mem.rss} VSIZE=#{mem.vsize} HEAP_TOTAL=#{mem.heapTotal} HEAP_USED=#{mem.heapUsed}"
+  setTimeout log_memory, 10000
+
+exports.method = (args...) ->
   Caboose.app.initialize (app) ->
     load_models ->
       app.boot ->
-        console.log "Listening on port #{app.address().port}"
+        console.log "[CABOOSE] Listening on port #{app.address().port}"
+        
+        log_memory() if _(args).include('profile')
