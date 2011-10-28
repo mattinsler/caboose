@@ -30,8 +30,20 @@ class Model
   @count: (callback) ->
     new Query(this).count callback
   
+  @all: ->
+    new Query(this)
+  
   @where: (query) ->
-    new Query this, query
+    new Query(this, query)
+  
+  @sort: (fields) ->
+    new Query(this).sort(fields)
+  
+  @skip: (count) ->
+    new Query(this).skip(count)
+  
+  @limit: (count) ->
+    new Query(this).limit(count)
 
   @save: (doc, callback) ->
     @_ensure_collection (c) =>

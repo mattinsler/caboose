@@ -13,4 +13,7 @@ exports.method = (script) ->
   throw new Error 'caboose run requires a script argument' if not script?
   Caboose.app.initialize ->
     load_models ->
-      require path.join(process.cwd(), script)
+      if script.indexOf('/') is 0
+        require script
+      else
+        require path.join(process.cwd(), script)
