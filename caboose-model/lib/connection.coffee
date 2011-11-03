@@ -28,7 +28,7 @@ module.exports = class Connection
         @db = new mongodb.Db options.database, new mongodb.Server(options.host, options.port)
       
     @db.open (err, db) =>
-      console.error err.stack if err?
+      console.error(err.stack or err) if err?
       # @registerModel m for m in @models if not err?
       if options.user? and options.password?
         @db.authenticate options.user, options.password, =>
