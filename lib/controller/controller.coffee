@@ -53,10 +53,12 @@ class Controller
   set_headers: (headers) ->
     @_responder.set_headers {headers: headers}
     
-  clear_cookie: (name) ->
-    @_responder.req.cookies[name] = null
-    # @_responder.res.clearCookie name
-    @_responder.res.cookie name, null
+  clear_cookie: (name, options) ->
+    options or= {}
+    options.expires = new Date(0)
+    # @_responder.req.cookies[name] = null
+    @_responder.res.cookie name, null, options
+    # @_responder.res.cookie name, null
     
   stylesheet_link_tag: (filename) ->
     return '<link type="text/css" rel="stylesheet" href="/css/' + filename + '.css">'
