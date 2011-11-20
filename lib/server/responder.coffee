@@ -3,21 +3,6 @@ ejs = require 'ejs'
 path = require 'path'
 ViewFactory = require '../view/view_factory'
 
-url_for = (req, path, opts) ->
-  opts ?= {}
-  opts.protocol ?= req.parsed.protocol
-  opts.subdomain ?= req.parsed.subdomain
-  opts.domain ?= req.parsed.domain
-  opts.port ?= req.parsed.port
-
-  opts.host = (if opts.subdomain is '' then '' else "#{opts.subdomain}.") +
-              opts.domain +
-              (if (opts.port is 80 and opts.protocol is 'http:') or (opts.port is 443 and opts.protocol is 'https:') then '' else ":#{opts.port}") unless opts.host?
-
-  path = '/' + path if path[0] isnt '/'
-  
-  "#{opts.protocol}//#{opts.host}#{path}"
-
 class Responder
   constructor: (@req, @res, @next) ->
     @_renderers = {
@@ -31,9 +16,7 @@ class Responder
     }
 
   render_html: (controller, data, options) ->
-    locals = {
-      url_for: url_for.bind(undefined, @req)
-    }
+    locals = {}
     
     for helper in controller._helpers
       if typeof helper isnt 'string'
