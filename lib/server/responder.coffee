@@ -1,6 +1,22 @@
+_ = require 'underscore'
 ejs = require 'ejs'
 path = require 'path'
 ViewFactory = require '../view/view_factory'
+
+url_for = (req, path, opts) ->
+  opts ?= {}
+  opts.protocol ?= req.parsed.protocol
+  opts.subdomain ?= req.parsed.subdomain
+  opts.domain ?= req.parsed.domain
+  opts.port ?= req.parsed.port
+
+  opts.host = (if opts.subdomain is '' then '' else "#{opts.subdomain}.") +
+              opts.domain +
+              (if (opts.port is 80 and opts.protocol is 'http:') or (opts.port is 443 and opts.protocol is 'https:') then '' else ":#{opts.port}") unless opts.host?
+
+  path = '/' + path if path[0] isnt '/'
+  
+  "#{opts.protocol}//#{opts.host}#{path}"
 
 class Responder
   constructor: (@req, @res, @next) ->
@@ -15,19 +31,21 @@ class Responder
     }
 
   render_html: (controller, data, options) ->
-    http = Caboose.app.config.http
     locals = {
-      server: {
-        base_url: "http://#{http.host}#{(if http.port is 80 then '' else ':' + http.port)}"
-      }
+      url_for: url_for.bind(undefined, @req)
     }
-    locals[k] = v for k, v of data
+    
+    for helper in controller._helpers
+      if typeof helper isnt 'string'
+        _.extend(locals, helper)
+    _.extend(locals, data, controller)
 
-    # layoutFactory = global.registry.get "#layout_view"
-    # viewFactory = global.registry.get "#{spec.controller}##{spec.action}_view"
-    # viewFactory = global.registry.get
     view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
-    layout_factory = ViewFactory.compile Caboose.path.views.join('layout.html.ejs').toString()
+    if options?.layout?
+      layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', options.layout + '.html.ejs').toString()) unless !options.layout
+    else
+      layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', controller._short_name + '.html.ejs').toString()) ||
+                       ViewFactory.compile(Caboose.path.views.join('layout.html.ejs').toString())
 
     if view_factory?
       view = view_factory.create()

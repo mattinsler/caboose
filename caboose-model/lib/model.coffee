@@ -9,9 +9,15 @@ class Model
   save: (callback) ->
     @_type.save this, callback
   
-  update: (update, callback) ->
+  update: (query, update, callback) ->
     return callback new Error 'Models must have an _id field in order to call update' unless @_id?
-    @_type.update {_id: @_id}, update, callback
+    if !update? or typeof update is 'function' # no query
+      callback = arguments[1]
+      update = arguments[0]
+      query = {_id: @_id}
+    else
+      query._id = @_id
+    @_type.update query, update, callback
   
   remove: (callback) ->
     return callback new Error 'Models must have an _id field in order to call remove' unless @_id?

@@ -1,8 +1,6 @@
-fs = require 'fs'
 Path = require './path'
 express = require 'express'
-Route = require './server/route'
-Routes = require './server/routes'
+Router = require './server/router'
 
 module.exports = class Application
   constructor: ->
@@ -53,7 +51,8 @@ module.exports = class Application
     @_state.initializing = true
     @_state.callbacks = [callback]
     
-    @routes = Routes.create Caboose.path.config.join('routes')
+    @router = new Router()
+    @router.parse Caboose.path.config.join('routes').require()
     
     @configure (err) =>
       if err?
@@ -76,17 +75,6 @@ module.exports = class Application
     middleware = Caboose.path.config.join('middleware').require()
     middleware @http
     
-    add_route = (route) =>
-      path = route.path
-      # path += '.:format?' unless path[path.length - 1] is '/'
-      # console.log "#{route.method} #{path}"
-      @http[route.method] path, (req, res, next) ->
-        route.respond req, res, next
-
-    for k, spec of @routes
-      route = new Route spec
-      add_route route if route?
-
     @http.listen @config.http.port
 
     for method in @_post_boot

@@ -39,12 +39,8 @@ class Controller
       
     @_responder.render this, data, options
   redirect_to: (url, options) ->
-    if options?.notice?
-      @session.flash ?= {}
-      @session.flash.notice = options.notice
-    if options?.error?
-      @session.flash ?= {}
-      @session.flash.error = options.error
+    if options?
+      @session.flash = options
     @_responder.redirect_to url
     
   # options: httpOnly, secure, expires, maxAge

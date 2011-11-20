@@ -5,11 +5,9 @@ coffee = require 'coffee-script'
 Controller = require './controller'
 
 class ControllerFactory
-  constructor: (@name, @short_name, @extends, @class, filters) ->
-    if 'Controller' is @extends
-      @filters = filters
-    else
-      @filters = Caboose.registry.get(@extends).filters.concat filters
+  constructor: (@name, @short_name, @extends, @class, filters, helpers) ->
+    @filters = if 'Controller' is @extends then filters else Caboose.registry.get(@extends).filters.concat filters
+    @helpers = if 'Controller' is @extends then helpers else Caboose.registry.get(@extends).helpers.concat helpers
   
   create: (responder) ->
     controller = new @class()
@@ -17,6 +15,7 @@ class ControllerFactory
     controller._short_name = @short_name
     controller._extends = @extends
     controller._filters = @filters
+    controller._helpers = @helpers
     controller._responder = responder
     controller.request = responder.req
     controller.response = responder.res
