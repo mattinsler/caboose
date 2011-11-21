@@ -22,7 +22,7 @@ class Responder
       if typeof helper isnt 'string'
         _.extend(locals, helper)
     _.extend(locals, data, controller)
-
+    
     view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
     if options?.layout?
       layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', options.layout + '.html.ejs').toString()) unless !options.layout
@@ -33,6 +33,7 @@ class Responder
     if view_factory?
       view = view_factory.create()
       html = ejs.render view.html.template, {
+        scope: locals
         locals: locals
         filename: view.html.filename
       }
@@ -40,10 +41,12 @@ class Responder
         layout = layout_factory.create()
         locals.yield = -> html
         layoutHtml = ejs.render layout.html.template, {
+          scope: locals
           locals: locals
           filename: layout.html.filename
         }
         html = layoutHtml
+
     html
 
   set_headers: (options) ->

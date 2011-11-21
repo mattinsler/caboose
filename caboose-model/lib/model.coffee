@@ -24,8 +24,8 @@ class Model
     @_type.remove {_id: @_id}, callback
   
   @_ensure_collection: (callback) ->
-    callback() if @_collection
-    Collection.create @_collection_name, (err, collection) ->
+    return callback(@_collection) if @_collection?
+    Collection.create @_collection_name, (err, collection) =>
       return console.error err.stack if err?
       @_collection = collection
       callback @_collection
@@ -92,6 +92,16 @@ class Model
     # collection.findAndModify(query, sort, update, options, callback)
     @_ensure_collection (c) =>
       c.findAndModify options.query, options.sort || [], options.update, opts, callback
+  
+  @map_reduce: (map, reduce, options, callback) ->
+    @_ensure_collection (c) =>
+      c.mapReduce map, reduce, options, (err, collection) ->
+        return callback(err) if err?
+        
+        model = class extends Model
+        model._type = model
+        model._collection = collection
+        callback(null, model)
 
 field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
 try

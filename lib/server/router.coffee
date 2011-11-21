@@ -131,6 +131,7 @@ class Configurator
     # @match (if options?.destroy? then options.destroy else "#{path}/:id"),      method: 'delete',  action: 'destroy', controller: controller
     # if options? and typeof options is 'function'
     #   @_childRoutes path, routes
+    
 
 module.exports = class Router
   @conditions: conditions
