@@ -25,7 +25,7 @@ if not global.Caboose?
 
 exports.cli = require './lib/cli'
 exports.registry = Caboose.registry
-
+exports.path = Path
 
 
 
