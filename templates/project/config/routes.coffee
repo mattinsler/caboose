@@ -1,4 +1,2 @@
-module.exports = (done) ->
-  @route '/', 'home'
-      
-  done and done()
+module.exports = ->
+  @route '/', 'application'
