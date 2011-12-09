@@ -1,22 +1,6 @@
-# Caboose
-
-  A [coffeescript](http://coffeescript.org)-happy [express](http://expressjs.com/)-based server-side MVC framework based on [Rails](http://rubyonrails.org/)
-
-## Installation
-
-    npm install caboose
-
-## Getting Started
-
-    $ caboose new app_name
-    $ cd app_name
-    $ caboose server
-
-## License 
-
 (The MIT License)
 
-Copyright (c) 2011 Matt Insler &lt;matt.insler@gmail.com&gt;
+Copyright (c) 2011 Matt Insler <matt.insler@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
