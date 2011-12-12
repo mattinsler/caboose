@@ -23,6 +23,9 @@ class Responder
         _.extend(locals, helper)
     _.extend(locals, data, controller)
     
+    partial = (view, partial_data) ->
+      partial_data = locals unless partial_data?
+    
     view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
     if options?.layout?
       layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', options.layout + '.html.ejs').toString()) unless !options.layout

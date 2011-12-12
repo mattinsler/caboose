@@ -3,10 +3,11 @@ _ = require 'underscore'
 exports.description = 'Start app server'
 
 load_models = (callback) ->
-  for file in Caboose.path.models.readdir_sync()
-    match = /^(.+)\.(js|coffee)$/.exec(file)
-    Caboose.registry.get(match[1]) if match?
+  if Caboose.path.models.exists_sync()
+    for file in Caboose.path.models.readdir_sync()
+      Caboose.registry.get(file.basename) if file.extension in ['js', 'coffee']
   callback()
+
 
 log_memory = ->
   mem = process.memoryUsage()

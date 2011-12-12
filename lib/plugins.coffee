@@ -7,7 +7,7 @@ get_with_base = (base, filename, moduleName) ->
   if base.exists_sync()
     for file in base.readdir_sync()
       try
-        pluginModule = base.join(file, filename).require()
+        pluginModule = file.join(filename).require()
         plugins.push pluginModule[moduleName] if pluginModule[moduleName]?
         # console.log "Installing plugin #{file}.#{filename}"
       catch e

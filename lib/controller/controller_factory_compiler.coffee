@@ -2,12 +2,14 @@ Compiler = require '../compiler'
 Controller = require './controller'
 ControllerFactory = require './controller_factory'
 
+ViewHelper = require './helpers/view_helper'
+
 class ControllerFactoryCompiler extends Compiler
   constructor: -> super()
   
   precompile: ->
     @filters = []
-    @helpers = []
+    @helpers = [ViewHelper]
     
     matches = /class\W+([^\W]+)\W+extends\W+([^\W]*Controller)/.exec(@code)
     throw new Error 'Could not find a controller defined' unless matches?

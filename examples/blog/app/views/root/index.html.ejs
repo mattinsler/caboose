@@ -1,0 +1,14 @@
+<h1>Blog</h1>
+
+<% if (count) { %>
+  <p>Display all <%= count %> post(s)</p>
+  <div id="posts">
+    <%- partial('post', posts) %>
+  </div>
+<% } else { %>
+  <p>It looks like you have no posts!</p>
+  <p>
+    Click <%- link_to('here', '/posts/new') %> to create a post.
+    Login as <em>"admin"</em> and <em>"caboose"</em>.
+  </p>
+<% } %>

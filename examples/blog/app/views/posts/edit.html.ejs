@@ -1,0 +1,22 @@
+<% if (post.title) { %>
+  <h1>Editing <%= post.title %></h1>
+<% } else { %>
+  <h1>New Post</h1>
+<% } %>
+
+<form id="post" action="/posts<%= post.title ? '/' + post.id : '' %>" method="POST">
+  <% if (post.title) { %>
+    <input type="hidden" name="_method" value="put" />
+  <% } %>
+  <p>
+    <label for="post[title]">Title:</label>
+    <input type="text" name="post[title]" value="<%= post.title %>" />
+  </p>
+  <p>
+    <label for="post[body]">Body:</label>
+    <textarea name="post[body]"><%= post.body || '' %></textarea>
+  </p>
+  <p>
+    <input type="submit" value="<%= post.title ? 'Update' : 'Create' %>" />
+  </p>
+</form>

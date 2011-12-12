@@ -1,0 +1,13 @@
+<div class="post">
+  <h2>
+    <%= post.title %>
+    <a class="edit" href="/posts/<%= post.id %>/edit">Edit</a>
+  </h2>
+  
+  <p class="date created">Created at <%= post.created_at %><p>
+  <% if (post.updated_at) { %>
+    <p class="date updated">Updated at <%= post.updated_at %></p>
+  <% } %>
+  
+  <pre class="body"><%= post.body %></pre>
+</div>

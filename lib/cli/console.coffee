@@ -5,15 +5,16 @@ colors = require 'colors'
 exports.description = 'Open a console with the environment loaded'
 
 load_models = (callback) ->
+  return callback([]) unless Caboose.path.models.exists_sync()
+  
   console.log '------------------------------'.grey
   console.log '| '.grey + 'Loading Models'.blue
   console.log '------------------------------'.grey
 
   models = []
   for file in Caboose.path.models.readdir_sync()
-    match = /^(.+)\.(js|coffee)$/.exec(file)
-    if match?
-      model = Caboose.registry.get match[1]
+    if file.extension in ['js', 'coffee']
+      model = Caboose.registry.get file.basename
       console.log '| '.grey + 'Loaded: '.blue + model._name.green
       models.push model
   

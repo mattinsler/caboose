@@ -62,6 +62,8 @@ class Node
     @params = []
     @methods = {}
     @conditions = options.conditions if options?.conditions?
+  path: ->
+    @segment
 
 class ParamNode extends Node
   @create_matcher: (condition) ->
@@ -119,6 +121,15 @@ class Configurator
     node.methods = {} unless node.methods?
     node.methods[options.method] = [] unless node.methods[options.method]?
     node.methods[options.method].push {route: new Route(options), conditions: conditions}
+  
+  resources: (path) ->
+    @route path, "#{path}#index"
+    @route "#{path}/new", "#{path}#new"
+    @route "post #{path}", "#{path}#create"
+    @route "#{path}/:id", "#{path}#show"
+    @route "#{path}/:id/edit", "#{path}#edit"
+    @route "put #{path}/:id", "#{path}#update"
+    @route "delete #{path}/:id", "#{path}#destroy"
   
   # resources: (path, options) ->
     # controller = if options?.controller? then options.controller else path

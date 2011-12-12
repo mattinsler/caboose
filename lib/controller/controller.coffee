@@ -56,10 +56,4 @@ class Controller
     @_responder.res.cookie name, null, options
     # @_responder.res.cookie name, null
     
-  stylesheet_link_tag: (filename) ->
-    return '<link type="text/css" rel="stylesheet" href="/css/' + filename + '.css">'
-    
-  link_to: (text, link) ->
-    return '<a href="' + link + '">' + text + '</a>'
-    
 module.exports = Controller

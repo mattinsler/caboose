@@ -34,7 +34,7 @@ module.exports = class Application
     next = ->
       return callback() if index is files.length
       try
-        initializers_path.join(files[index++]).require() next
+        files[index++].require() next
       catch e
         return callback(e)
     next()

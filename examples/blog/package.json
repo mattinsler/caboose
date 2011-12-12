@@ -1,0 +1,11 @@
+{
+  "name": "blog",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "coffee-script": "0.1.1",
+    "caboose": "0.2.0",
+    "caboose-model": "0.1.0",
+    "express": "2.3.12"
+  }
+}
