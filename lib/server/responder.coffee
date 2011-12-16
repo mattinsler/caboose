@@ -1,7 +1,18 @@
 _ = require 'underscore'
-ejs = require 'ejs'
-path = require 'path'
+# ejs = require 'ejs'
+Path = require '../path'
 ViewFactory = require '../view/view_factory'
+# consolidate = require 'consolidate'
+#   
+# render = (path, data, callback) ->
+#   consolidate[path.extension](path.path, data, callback)
+
+resolve_view = (view, format) ->
+  view = new Path(view)
+  Caboose.path.views.join(view.dirname).readdir (err, files) ->
+    _(files).find((f) -> f.basename is view.filename)
+    _(files).find((f) -> "f.basename.#{format}" is view.filename)
+    
 
 class Responder
   constructor: (@req, @res, @next) ->
@@ -25,6 +36,7 @@ class Responder
     
     partial = (view, partial_data) ->
       partial_data = locals unless partial_data?
+      @render_html( )
     
     view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
     if options?.layout?

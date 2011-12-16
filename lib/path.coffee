@@ -3,10 +3,16 @@ util = require 'util'
 PATH = require 'path'
 
 module.exports = class Path
-  constructor: (@path = process.cwd()) ->
-    [x, x, @basename, @extension] = /^(.*\/)?(?:$|(.+?)(?:(\.[^.]*$)|$))/.exec(@path)
-    @filename = (@basename or '') + (@extension or '')
-    @extension = @extension.slice(1) if @extension?
+  constructor: (path = process.cwd()) ->
+    @path = PATH.normalize(path)
+    # [x, x, @basename, @extension] = /^(.*\/)?(?:$|(.+?)(?:(\.[^.]*$)|$))/.exec(@path)
+    # @filename = (@basename or '') + (@extension or '')
+    # @extension = @extension.slice(1) if @extension?
+    
+    @dirname = PATH.dirname(@path)
+    @extension = PATH.extname(@path)
+    @filename = PATH.basename(@path)
+    @basename = PATH.basename(@path, @extension)
     
   join: (subpaths...) ->
     new Path(PATH.join @path, subpaths...)
