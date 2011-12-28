@@ -2,14 +2,6 @@
 
   A [coffeescript](http://coffeescript.org)-happy [express](http://expressjs.com/)-based server-side MVC framework based on [Rails](http://rubyonrails.org/)
 
-## Sister Projects
-
-* [caboose-model](https://github.com/mattinsler/caboose/tree/master/caboose-model)
-
-## Plugins
-
-* [caboose-authentication](https://github.com/mattinsler/caboose/tree/master/caboose-authentication)
-
 ## Installation
 
     npm install caboose
@@ -19,6 +11,10 @@
     $ caboose new app_name
     $ cd app_name
     $ caboose server
+
+## Related Projects
+
+* [caboose-model](https://github.com/mattinsler/caboose/tree/master/caboose-model)
 
 ## License 
 
