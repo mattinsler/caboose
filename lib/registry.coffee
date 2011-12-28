@@ -1,11 +1,14 @@
+_ = require 'underscore'
 ControllerFactory = require './controller/controller_factory'
 
 cache = exports.cache = {}
 registered_getters = exports.registered_getters = [{
+  name: 'controller',
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'controller'
     ControllerFactory.compile Caboose.path.controllers.join(parsed_name.join('_') + '.coffee').toString()
 }, {
+  name: 'helper',
   get: (parsed_name) ->
     return null if parsed_name[parsed_name.length - 1] isnt 'helper'
     Caboose.path.helpers.join(parsed_name.join('_')).require()
@@ -35,7 +38,9 @@ split = (name) ->
   parts.push name.substring(start, name.length).toLowerCase() unless start is name.length
   parts
 
-exports.register = (getter) ->
+exports.register = (name, getter) ->
+  throw new Error("There is already a getter for #{name} in the registry") if _(registered_getters).find((g) -> g.name is name)
+  getter.name = name
   registered_getters.push getter
 
 exports.get = (name) ->

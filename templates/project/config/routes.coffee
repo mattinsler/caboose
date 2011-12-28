@@ -1,2 +1,2 @@
 module.exports = ->
-  @route '/', 'application'
+  @route '/', 'home'

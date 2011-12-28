@@ -10,8 +10,13 @@ module.exports = (next) ->
   
   Caboose.registry.register {
     get: (parsed_name) ->
+      name = parsed_name.join('_')
       try
-        return Caboose.path.models.join(parsed_name.join('_')).require()
+        files = Caboose.path.models.readdir_sync()
+        model_file = _(files).find((f) -> f.basename is name)
+        return null unless model_file?
+        return model_file if model_file.extension is 'coffee'
+        model_file.requre()
       catch e
         console.error e.stack
       null

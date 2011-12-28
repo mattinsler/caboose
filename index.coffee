@@ -27,7 +27,9 @@ exports.cli = require './lib/cli'
 exports.registry = global.Caboose.registry
 exports.path = Path
 
-
+exports.internal = {
+  compiler: require './lib/compiler'
+}
 
 
 # 

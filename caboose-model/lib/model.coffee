@@ -103,6 +103,8 @@ class Model
         model._collection = collection
         callback(null, model)
 
+Object.defineProperty(Model, '_ensure_collection', {enumerable: false})
+
 field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
 try
   new mongodb.Db 'test', new mongodb.Server('localhost', 27017), native_parser: true
@@ -112,6 +114,7 @@ catch e
   bson = 'BSONPure'
 
 for fn in field_names
-  Model[fn] = mongodb[bson][fn]
+  Object.defineProperty(Model, fn, {value: mongodb[bson][fn], enumerable: false})
+  Object.defineProperty(Query, fn, {value: mongodb[bson][fn], enumerable: false})
 
 module.exports = Model

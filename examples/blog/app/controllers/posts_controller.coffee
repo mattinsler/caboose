@@ -12,16 +12,16 @@ class PostsController extends ApplicationController
       next()
   
   show: ->
-    @render()
+    @render '_post'
   
   new: ->
     @post = {}
     @render 'edit'
   
   create: ->
+    @body.post.created_at = new Date()
     Post.save @body.post, (err, post) =>
-      @flash.info = "Successfully created post #{post.title}"
-      @redirect_to "/posts/#{post._id}"
+      @redirect_to "/posts/#{post._id}", {info: "Successfully created post #{post.title}"}
   
   edit: ->
     @render()
@@ -29,5 +29,4 @@ class PostsController extends ApplicationController
   update: ->
     @post.update {$set: @body.post}, (err) =>
       return @error(err) if err?
-      @flash.info = 'Successfully updated post'
-      @redirect_to 'back'
+      @redirect_to "/posts/#{@post._id}", {info: 'Successfully updated post'}

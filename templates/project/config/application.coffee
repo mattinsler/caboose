@@ -1,5 +1,3 @@
-Model = require('caboose').Model
-
 module.exports = (config, next) ->
   config.http =
     enabled: true

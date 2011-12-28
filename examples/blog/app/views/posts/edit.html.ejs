@@ -4,13 +4,13 @@
   <h1>New Post</h1>
 <% } %>
 
-<form id="post" action="/posts<%= post.title ? '/' + post.id : '' %>" method="POST">
+<form id="post" action="/posts<%= post.title ? '/' + post._id : '' %>" method="POST">
   <% if (post.title) { %>
     <input type="hidden" name="_method" value="put" />
   <% } %>
   <p>
     <label for="post[title]">Title:</label>
-    <input type="text" name="post[title]" value="<%= post.title %>" />
+    <input type="text" name="post[title]" value="<%= post.title || '' %>" />
   </p>
   <p>
     <label for="post[body]">Body:</label>

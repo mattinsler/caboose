@@ -1,68 +1,99 @@
 _ = require 'underscore'
-# ejs = require 'ejs'
 Path = require '../path'
-ViewFactory = require '../view/view_factory'
-# consolidate = require 'consolidate'
-#   
-# render = (path, data, callback) ->
-#   consolidate[path.extension](path.path, data, callback)
+consolidate = require('consolidate').render
 
-resolve_view = (view, format) ->
+resolve_view = (root, view, format, is_partial) ->
   view = new Path(view)
-  Caboose.path.views.join(view.dirname).readdir (err, files) ->
-    _(files).find((f) -> f.basename is view.filename)
-    _(files).find((f) -> "f.basename.#{format}" is view.filename)
+  view = if view.is_absolute() then new Path(view.path.replace(/^\/+/, '')) else new Path(root).join(view.path)
+  name = (if is_partial and view.filename[0] isnt '_' then '_' else '') + view.filename
+  try
+    files = (if view.is_absolute() then new Path(view.dirname) else Caboose.path.views.join(view.dirname)).readdir_sync()
+    _(files).find((f) -> f.basename is "#{name}.#{format}") || _(files).find((f) -> f.basename is name)
+  catch e
+
+resolve_layout = (controller, format) ->
+  layouts_dir = Caboose.path.views.join('layouts')
+  return resolve_view(layouts_dir, controller, format) if typeof controller is 'string'
+  
+  c = Caboose.registry.get(controller._name)
+  while c
+    layout = resolve_view(layouts_dir, c.short_name, format)
+    return layout if layout?
+    c = Caboose.registry.get(c.extends)
+  null
+
+compile_helpers = (controller) ->
+  helpers = {}
+  _.extend(helpers, helper) for helper in controller._helpers
+  helpers
+
+render = (controller, data, options, callback) ->
+  counter = 0
+  render_count = 1
+  
+  rendered_text = null
+  partial_table = {}
+  done = (err, str, partial_id) ->
+    return callback(err) if err?
     
+    if partial_id?
+      partial_table[partial_id] = str
+    else
+      rendered_text = str
+    
+    if ++counter is render_count
+      rendered_text = rendered_text.replace(id, text) for id, text of partial_table
+      callback(null, rendered_text)
+  
+  render_partial = (partial_view, partial_data) ->
+    ++render_count
+
+    partial_var = new Path(partial_view).filename.replace(/^\_+/, '')
+    partial_locals = _.extend({}, compile_helpers(controller), partial_data || data || controller)
+    partial_locals.partial = render_partial
+    partial_view = resolve_view(controller._short_name, partial_view, controller.params.format, true)
+    partial_key = "PARTIAL[#{render_count}]"
+    
+    if Array.isArray(partial_data)
+      array_data = Array::slice.apply(partial_data)
+      array_done = _.after partial_data.length, -> done(null, array_data.join('\n'), partial_key)
+      partial_data.forEach (item, idx) ->
+        partial_array_locals = _.extend({}, partial_locals)
+        partial_array_locals[partial_var] = item
+        consolidate[partial_view.extension] partial_view.path, partial_array_locals, (err, partial_text) ->
+          return done(err) if err?
+          array_data[idx] = partial_text
+          array_done()
+    else
+      consolidate[partial_view.extension] partial_view.path, partial_locals, (err, partial_text) ->
+        done(err, partial_text, partial_key)
+    
+    partial_key
+  
+  locals = _.extend({}, compile_helpers(controller), data || controller)
+  locals.partial = render_partial
+  
+  view = resolve_view(controller._short_name, controller._view, controller.params.format)
+  consolidate[view.extension] view.path, locals, (err, text) ->
+    return done(err, text) if err? or (options?.layout? and !options.layout)
+    
+    layout = resolve_layout(options?.layout || controller, controller.params.format)
+    return done(err, text) unless layout?
+    
+    locals.yield = -> text
+    consolidate[layout.extension] layout.path, locals, done
 
 class Responder
   constructor: (@req, @res, @next) ->
     @_renderers = {
       html: (controller, data, options) =>
-        html = @render_html controller, data, options
-        @res.contentType 'text/html'
-        @res.send html, 200
+        render controller, data, options, (err, html) =>
+          @res.contentType 'text/html'
+          @res.send html, 200
       json: (controller, data, options) =>
         @res.contentType 'application/json'
         @res.send data, 200
     }
-
-  render_html: (controller, data, options) ->
-    locals = {}
-    
-    for helper in controller._helpers
-      if typeof helper isnt 'string'
-        _.extend(locals, helper)
-    _.extend(locals, data, controller)
-    
-    partial = (view, partial_data) ->
-      partial_data = locals unless partial_data?
-      @render_html( )
-    
-    view_factory = ViewFactory.compile Caboose.path.views.join(controller._short_name, "#{controller._view}.html.ejs").toString()
-    if options?.layout?
-      layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', options.layout + '.html.ejs').toString()) unless !options.layout
-    else
-      layout_factory = ViewFactory.compile(Caboose.path.views.join('layouts', controller._short_name + '.html.ejs').toString()) ||
-                       ViewFactory.compile(Caboose.path.views.join('layout.html.ejs').toString())
-
-    if view_factory?
-      view = view_factory.create()
-      html = ejs.render view.html.template, {
-        scope: locals
-        locals: locals
-        filename: view.html.filename
-      }
-      if layout_factory?
-        layout = layout_factory.create()
-        locals.yield = -> html
-        layoutHtml = ejs.render layout.html.template, {
-          scope: locals
-          locals: locals
-          filename: layout.html.filename
-        }
-        html = layoutHtml
-
-    html
 
   set_headers: (options) ->
     set_header = (k, v) => @res.header(k, v)

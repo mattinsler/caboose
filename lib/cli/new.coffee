@@ -1,6 +1,6 @@
 _ = require 'underscore'
 Path = require '../path'
-colors = require 'colors'
+require 'colors'
 
 exports.description = 'Create a new Caboose project'
 

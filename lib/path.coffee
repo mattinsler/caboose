@@ -4,7 +4,7 @@ PATH = require 'path'
 
 module.exports = class Path
   constructor: (path = process.cwd()) ->
-    @path = PATH.normalize(path)
+    @path = PATH.normalize(if path instanceof Path then path.path else path)
     # [x, x, @basename, @extension] = /^(.*\/)?(?:$|(.+?)(?:(\.[^.]*$)|$))/.exec(@path)
     # @filename = (@basename or '') + (@extension or '')
     # @extension = @extension.slice(1) if @extension?
@@ -13,8 +13,10 @@ module.exports = class Path
     @extension = PATH.extname(@path)
     @filename = PATH.basename(@path)
     @basename = PATH.basename(@path, @extension)
+    @extension = @extension.replace(/^\.+/, '')
     
   join: (subpaths...) ->
+    subpaths = subpaths.map (p) -> if p instanceof Path then p.path else p
     new Path(PATH.join @path, subpaths...)
   
   toString: ->
@@ -97,3 +99,6 @@ module.exports = class Path
   
   is_directory_sync: ->
     @stat_sync().isDirectory()
+  
+  is_absolute: ->
+    @path[0] is '/'

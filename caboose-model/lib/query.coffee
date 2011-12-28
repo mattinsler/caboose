@@ -1,6 +1,7 @@
 module.exports = class Query
   constructor: (@model, @query) ->
     @query ?= {}
+    @query._id = new Query.ObjectID(@query._id) if @query._id? and typeof @query._id is 'string'
     @options = {}
 
   skip: (count) ->

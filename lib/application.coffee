@@ -34,7 +34,8 @@ module.exports = class Application
     next = ->
       return callback() if index is files.length
       try
-        files[index++].require() next
+        initializer = files[index++].require()
+        if initializer? and typeof initializer is 'function' then initializer(next) else next()
       catch e
         return callback(e)
     next()

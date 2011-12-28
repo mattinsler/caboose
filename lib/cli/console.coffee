@@ -1,6 +1,4 @@
-fs = require 'fs'
-path = require 'path'
-colors = require 'colors'
+require 'colors'
 
 exports.description = 'Open a console with the environment loaded'
 
