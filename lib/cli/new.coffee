@@ -16,13 +16,14 @@ copy_dir = (from, to) ->
         console.log '          ' + 'create'.green + ' ' + to_file
         file.copy_sync(to_file)
 
-exports.method = (args...) ->
-  if args.length is 1
-    base = new Path().join(args[0])
-    return console.error("[CABOOSE] Error: File or directory '#{args[0]}' already exists") if base.exists_sync()
+exports.method = (project_name) ->
+  if project_name?
+    base = new Path().join(project_name)
+    return console.error("[CABOOSE] Error: File or directory '#{project_name}' already exists") if base.exists_sync()
     base.mkdir_sync(0755)
   else
     base = new Path()
+    project_name = base.basename
   
   template = new Path(__dirname).join('..', '..', 'templates', 'project')
   base.is_directory_empty (empty) ->
@@ -30,3 +31,6 @@ exports.method = (args...) ->
     
     console.log '[CABOOSE] ' + 'create'.green + ' new app at ' + base
     copy_dir(template, base)
+    package = JSON.parse(base.join('package.json').read_file_sync('utf8'))
+    package.name = project_name
+    base.join('package.json').write_file_sync(JSON.stringify(package, null, 2), 'utf8')

@@ -1,3 +1,4 @@
+_ = require 'underscore'
 require 'colors'
 
 module.exports = {
@@ -9,12 +10,18 @@ module.exports = {
       initializer_file = Caboose.path.config.join('initializers', 'caboose-model.coffee')
       if initializer_file.exists_sync()
         console.log '          ' + 'exists'.grey + ' ' + initializer_file
-        return
+      else
+        console.log '          ' + 'create'.green + ' ' + initializer_file
+        initializer_file.join('..').mkdir_sync(0755)
+        initializer_file.write_file_sync "require 'caboose-model'\n", 'utf8'
       
-      console.log '          ' + 'create'.green + ' ' + initializer_file
-      initializer_file.write_file_sync "require 'caboose-model'\n", 'utf8'
-      
-      # should probably edit package.json here... or at least check it
-      console.log '          Be sure to add caboose-model 0.1.x to your package.json file'.blue
+      try
+        package_file = Caboose.root.join('package.json')
+        console.log '          ' + 'alter'.grey + ' ' + package_file
+        package = JSON.parse(package_file.read_file_sync('utf8'))
+        package.dependencies['caboose-model'] = require('../index').version.join('.')
+        package_file.write_file_sync(JSON.stringify(package, null, 2), 'utf8')
+      catch e
+        console.log '          Could not read or alter package.json file.'.red
   }
 }

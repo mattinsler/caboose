@@ -8,7 +8,15 @@
 
 ## Getting Started
 
-First, add an initializer to your project (config/initializers/caboose-model.coffee):
+### Using `caboose plugin`
+
+    $ caboose plugin caboose-model install
+
+### Manually
+
+First install caboose-model using npm as above.  Make sure to add caboose-model to your package.json file as well.
+
+Then add an initializer to your project (config/initializers/caboose-model.coffee):
 
     require 'caboose-model'
 

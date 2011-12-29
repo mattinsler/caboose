@@ -4,6 +4,8 @@ if global['caboose-model']?
 
 _ = require 'underscore'
 
+exports.version = [0, 1, 1]
+
 exports.cli = require './lib/cli'
 Builder = exports.Builder = require './lib/builder'
 Compiler = exports.Compiler = require './lib/model_compiler'
