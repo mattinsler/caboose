@@ -1,14 +1,8 @@
-Model = require 'caboose-model'
-
-User = Model.create('User')
-            .store_in('user')
-            .authenticate_using('email', 'password')
-            .authenticate_with_token('auth_token')
-
-User.static 'find_by_email', (email) ->
-  @where {email: email}
-
-User.instance 'full_name', ->
-  "#{@first_name} #{@last_name}"
-
-module.exports = User.build()
+class User extends Model
+  store_in 'user'
+  
+  static 'find_by_email', (email) ->
+    @where {email: email}
+  
+  instance 'full_name', ->
+    "#{@first_name} #{@last_name}"
