@@ -4,7 +4,7 @@
 
 ## Installation
 
-    npm install caboose
+    npm install -g caboose
 
 ## Getting Started
 
