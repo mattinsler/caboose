@@ -25,7 +25,8 @@ if Caboose?
       name = parsed_name.join('_')
       try
         files = Caboose.path.models.readdir_sync()
-        model_file = _(files).find((f) -> f.basename is name)
+        model_file = files.filter((f) -> f.basename is name)
+        model_file = if model_file.length > 0 then model_file[0] else null
         return null unless model_file?
         return Compiler.compile(model_file) if model_file.extension is 'coffee'
         model_file.require()

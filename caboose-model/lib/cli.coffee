@@ -1,8 +1,25 @@
 require 'colors'
 
+underscorize = (name) ->
+  Caboose.registry.split(name).map((s) -> s.toLowerCase()).join('_')
+
+capitalize = (name) ->
+  Caboose.registry.split(name).map((s) -> s[0].toUpperCase() + s.substr(1).toLowerCase()).join('')
+
+mkdirp = (path) ->
+  if path.exists_sync()
+    console.log '          ' + 'exists'.grey + ' ' + path
+  else
+    dirs = [path]
+    until (path = path.join('..')).exists_sync()
+      dirs.push path
+    while (d = dirs.shift())
+      console.log '          ' + 'mkdir'.blue + '  ' + d
+      d.mkdir_sync(0755)
+
 module.exports = {
   install: {
-    description: ''
+    description: 'Install the caboose-model plugin'
     method: ->
       console.log '[CABOOSE] ' + 'intall'.green + ' caboose-model'
       
@@ -10,8 +27,8 @@ module.exports = {
       if initializer_file.exists_sync()
         console.log '          ' + 'exists'.grey + ' ' + initializer_file
       else
+        mkdirp(initializer_file.join('..'))
         console.log '          ' + 'create'.green + ' ' + initializer_file
-        initializer_file.join('..').mkdir_sync(0755) unless initializer_file.join('..').exists_sync()
         initializer_file.write_file_sync "require 'caboose-model'\n", 'utf8'
       
       unless Caboose.path.models.exists_sync()
@@ -26,5 +43,18 @@ module.exports = {
         package_file.write_file_sync(JSON.stringify(package, null, 2), 'utf8')
       catch e
         console.log '          Could not read or alter package.json file.'.red
+  }
+  
+  new: {
+    description: 'Create a new model'
+    method: (model_name) ->
+      return console.log('Must provide a model name'.red) unless model_name?
+      
+      console.log '[CABOOSE] ' + 'create'.green + " model #{capitalize(model_name)}"
+      mkdirp(Caboose.path.models)
+      model_file = Caboose.path.models.join("#{underscorize(model_name)}.coffee")
+      return (console.log '          ' + 'exists'.grey + ' ' + model_file) if model_file.exists_sync()
+      console.log '          ' + 'create'.green + ' ' + model_file
+      model_file.write_file_sync("class #{capitalize(model_name)} extends Model\n  store_in '#{underscorize(model_name)}'\n", 'utf8')
   }
 }

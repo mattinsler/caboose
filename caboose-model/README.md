@@ -36,37 +36,58 @@ The above initializer will automatically connect to the database listed in the m
 
 ## Usage
 
+### Create a model
+
+Create a User model with `caboose plugin`
+
+    $ caboose plugin caboose-model new User
+
+This will create a new file at app/models/user.coffee that looks like this:
+
+    class User extends Model
+      store_in 'user'
+
+You can also create a model in javascript if you'd like.  For the equivalent User model, simply create a file at app/models/user.js that looks like this:
+
+    var Model = require('caboose-model');
+
+    var User = Model.create('User')
+                    .store_in('user');
+
+    module.exports = User.build();
+
+### Use model from a Controller
+
 Using models from a controller is dead simple.  Just import the model by name and make your calls.
 
-    import 'Post'
+    import 'User'
     
-    class PostsController extends Controller
-      before_filter 'get_post', {only: ['show', 'edit', 'update']}
+    class UsersController extends Controller
+      before_filter 'get_user', {only: ['show', 'edit', 'update']}
       
-      get_post: (next) ->
-        Post.where(_id: @params.id).first (err, post) =>
+      get_user: (next) ->
+        User.where(_id: @params.id).first (err, user) =>
           return next(err) if err?
-          return next(new Error("Failed to load post #{@params.id}")) unless post?
-          @post = post
+          return next(new Error("Failed to load user #{@params.id}")) unless post?
+          @user = user
           next()
       
       show: -> @render()
       
       new: ->
-        @post = new Post()
+        @user = new User()
         @render 'edit'
   
       create: ->
-        Post.save @body.post, (err, post) =>
-          @redirect_to "/posts/#{post._id}", {info: "Successfully created post #{post.title}"}
+        User.save @body.user, (err, user) =>
+          @redirect_to "/users/#{user._id}", {info: "Successfully created user #{user.name}"}
       
       edit: -> @render()
       
       update: ->
-        @post.update {$set: @body.post}, (err) =>
+        @user.update {$set: @body.user}, (err) =>
           return @error(err) if err?
-          @redirect_to "/posts/#{@post._id}", {info: 'Successfully updated post'}
-
+          @redirect_to "/users/#{@user._id}", {info: 'Successfully updated user'}
 
 ## API
 

@@ -4,7 +4,7 @@ PATH = require 'path'
 
 module.exports = class Path
   constructor: (path = process.cwd()) ->
-    @path = PATH.normalize(if path instanceof Path then path.path else path)
+    @path = PATH.normalize(path.toString())
     # [x, x, @basename, @extension] = /^(.*\/)?(?:$|(.+?)(?:(\.[^.]*$)|$))/.exec(@path)
     # @filename = (@basename or '') + (@extension or '')
     # @extension = @extension.slice(1) if @extension?

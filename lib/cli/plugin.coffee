@@ -5,7 +5,7 @@ exports.description = 'Run plugin scripts'
 help = (plugin_name, plugin) ->
   console.log '[CABOOSE] ' + "Commands available for #{plugin_name}".blue
   console.log()
-  console.log '  ' + Object.keys(plugin.cli).join('  \n')
+  console.log '  ' + Object.keys(plugin.cli).join('\n  ')
   console.log()
 
 npm_install = (plugin_name, callback) ->

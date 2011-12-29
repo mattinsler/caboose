@@ -14,7 +14,7 @@ registered_getters = exports.registered_getters = [{
     Caboose.path.helpers.join(parsed_name.join('_')).require()
 }]
 
-split = (name) ->
+split = exports.split = (name) ->
   start = 0
   parts = []
   type = 0
