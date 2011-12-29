@@ -1,4 +1,3 @@
-_ = require 'underscore'
 Path = require '../path'
 require 'colors'
 

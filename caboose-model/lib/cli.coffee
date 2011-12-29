@@ -1,4 +1,3 @@
-_ = require 'underscore'
 require 'colors'
 
 module.exports = {
