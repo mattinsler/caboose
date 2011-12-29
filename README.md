@@ -10,6 +10,7 @@
 
     $ caboose new app_name
     $ cd app_name
+    $ npm install
     $ caboose server
 
 ## Related Projects

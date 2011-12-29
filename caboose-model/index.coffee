@@ -2,8 +2,6 @@ if global['caboose-model']?
   exports[k] = v for k, v of global['caboose-model']
   return
 
-_ = require 'underscore'
-
 exports.version = [0, 1, 1]
 
 exports.cli = require './lib/cli'

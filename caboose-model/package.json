@@ -11,7 +11,8 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "mongodb": "latest"
+    "mongodb": "latest",
+    "colors": "latest"
   },
   "devDependencies": {
     "vows": "latest"
