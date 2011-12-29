@@ -1,6 +1,10 @@
-#!/usr/bin/env node
+#!/bin/sh
 
-process.env.NODE_PATH = [process.cwd() + '/node_modules'].concat(!process.env.NODE_PATH ? [] : process.env.NODE_PATH.split(':')).join(':');
+node_modules=`pwd`/node_modules
 
-require('coffee-script');
-require('../index').cli.exec();
+if [ $(echo $NODE_PATH | tr ':' '\n' | grep -e "^${node_modules}$" | wc -l) -eq 0 ]; then
+  NODE_PATH=$node_modules $0 $@
+else
+  app=`readlink $0`
+  /usr/bin/env node ${app:-$0}.js $@
+fi
