@@ -14,6 +14,10 @@ module.exports = {
         initializer_file.join('..').mkdir_sync(0755)
         initializer_file.write_file_sync "require 'caboose-model'\n", 'utf8'
       
+      unless Caboose.path.models.exists_sync()
+        console.log '          ' + 'create'.green + ' ' + Caboose.path.models
+        Caboose.path.models.mkdir_sync(0755)
+      
       try
         package_file = Caboose.root.join('package.json')
         console.log '          ' + 'alter'.grey + ' ' + package_file

@@ -10,15 +10,21 @@ help = (plugin_name, plugin) ->
 
 npm_install = (plugin_name, callback) ->
   npm = require('npm')
-  npm.load {loglevel: 'silent'}, (err) ->
+  tmp_file = Caboose.root.join(new Buffer(16).toString('hex') + '.tmp')
+  stream = tmp_file.create_write_stream()
+  console.log "Trying to npm install #{plugin_name}".green
+  npm.load {prefix: Caboose.root.path, logfd: stream, outfd: stream, loglevel: 'silent'}, (err) ->
     return callback(err) if err?
     npm.commands.install [plugin_name], (err, a, result, str) ->
+      stream.destroy()
+      tmp_file.unlink_sync()
       return callback(err) if err?
+      console.log "Successfully installed #{plugin_name}!".green
       callback()
 
 exports.method = (plugin_name, command, args...) ->
   return console.log('Must specify a plugin name'.red) unless plugin_name?
-  
+
   [plugin_name, command] = plugin_name.split(':') if !command? and /^[^:]+:[^:]+$/.test(plugin_name)
 
   try
@@ -26,10 +32,10 @@ exports.method = (plugin_name, command, args...) ->
   catch e
     return console.log("Error while processing plugin #{plugin_name}".red) unless e.message is "Cannot find module '#{plugin_name}'"
     
-    return console.log "Could not find a plugin named #{plugin_name}".red
-    # return npm_install plugin_name, (err) ->
-    #   return console.log(err.message) if err?
-    #   exports.method(plugin_name, command, args...)
+    console.log "Could not find a plugin named #{plugin_name}".red
+    return npm_install plugin_name, (err) ->
+      return console.log(err.message) if err?
+      exports.method(plugin_name, command, args...)
       
   return console.log("#{plugin_name} is not setup to be a caboose plugin".red) unless plugin?.cli?
 

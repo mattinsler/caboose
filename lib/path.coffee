@@ -64,6 +64,12 @@ module.exports = class Path
 
   write_file_sync: (data, encoding = undefined) ->
     fs.writeFileSync @path, data, encoding
+  
+  unlink: (callback) ->
+    fs.unlink @path, callback
+  
+  unlink_sync: ->
+    fs.unlinkSync @path
 
   # HELPER METHODS
   is_directory_empty: (callback) ->

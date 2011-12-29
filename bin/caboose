@@ -1,4 +1,6 @@
 #!/usr/bin/env node
 
+process.env.NODE_PATH = [process.cwd() + '/node_modules'].concat(!process.env.NODE_PATH ? [] : process.env.NODE_PATH.split(':')).join(':');
+
 require('coffee-script');
 require('caboose').cli.exec();
