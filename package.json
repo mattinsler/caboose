@@ -19,6 +19,7 @@
     "switchback": "latest",
     "mailer": "latest",
     "underscore": "latest",
+    "consolidate": "latest",
     "npm": "latest"
   },
   "devDependencies": {
