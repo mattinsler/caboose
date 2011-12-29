@@ -1,5 +1,5 @@
 Path = require '../path'
-switchback = require 'switchback'
+switchback = require('switchback').program('caboose')
 
 base = new Path(__dirname)
 for file in base.readdir_sync()
