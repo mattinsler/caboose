@@ -11,7 +11,7 @@ module.exports = {
         console.log '          ' + 'exists'.grey + ' ' + initializer_file
       else
         console.log '          ' + 'create'.green + ' ' + initializer_file
-        initializer_file.join('..').mkdir_sync(0755)
+        initializer_file.join('..').mkdir_sync(0755) unless initializer_file.join('..').exists_sync()
         initializer_file.write_file_sync "require 'caboose-model'\n", 'utf8'
       
       unless Caboose.path.models.exists_sync()
