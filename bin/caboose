@@ -6,5 +6,7 @@ if [ $(echo $NODE_PATH | tr ':' '\n' | grep -e "^${node_modules}$" | wc -l) -eq 
   NODE_PATH=$node_modules $0 $@
 else
   app=`readlink $0`
-  /usr/bin/env node ${app:-$0}.js $@
+  app=${app:-$0}
+  [ $(echo $app | grep -e '^/' | wc -l) -eq 0 ] && app=`dirname $0`/$app
+  /usr/bin/env node $app.js $@
 fi
