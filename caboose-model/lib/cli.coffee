@@ -21,7 +21,7 @@ module.exports = {
   install: {
     description: 'Install the caboose-model plugin'
     method: ->
-      console.log '[CABOOSE] ' + 'intall'.green + ' caboose-model'
+      console.log '[CABOOSE] ' + 'install'.green + ' caboose-model'
       
       initializer_file = Caboose.path.config.join('initializers', 'caboose-model.coffee')
       if initializer_file.exists_sync()

@@ -27,9 +27,13 @@ exports.method = (plugin_name, command, args...) ->
 
   [plugin_name, command] = plugin_name.split(':') if !command? and /^[^:]+:[^:]+$/.test(plugin_name)
 
+  original_paths = module.paths.slice()
   try
+    module.paths = [Caboose.root.path]
     plugin = require(plugin_name)
+    module.paths = original_paths
   catch e
+    module.paths = original_paths
     return console.log("Error while processing plugin #{plugin_name}".red) unless e.message is "Cannot find module '#{plugin_name}'"
     
     console.log "Could not find a plugin named #{plugin_name}".red
