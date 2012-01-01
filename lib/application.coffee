@@ -10,6 +10,10 @@ module.exports = class Application
 
   post_boot: (method) ->
     @_post_boot.push method
+  
+  # read_config_files: (callback) ->
+  #   for file in Caboose.path.config.readdir_sync()
+  #     
 
   configure: (callback) ->
     @config = {}
@@ -41,9 +45,7 @@ module.exports = class Application
     next()
     
   run_initializers: (callback) ->
-    @run_initializers_in_path new Path(__dirname).join('initializers'), (err) =>
-      return callback(err) if err?
-      @run_initializers_in_path Caboose.path.config.join('initializers'), callback
+    @run_initializers_in_path Caboose.path.config.join('initializers'), callback
 
   initialize: (callback) ->
     return callback() if @_state.initialized
