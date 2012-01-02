@@ -197,16 +197,16 @@ Conditions can be set on any parameters in a route.  Just pass a conditions obje
 
 ```coffeescript
 # Restrict id to the string 'green-lantern'
-@route '/superheroes/:id', 'superheroes', {conditions: {id: 'green-lantern'}}
+@route '/superheroes/:id', 'superheroes#show', {conditions: {':id': 'green-lantern'}}
 
 # Restrict id to any of the strings 'green-lantern', 'alan-scott' or 'hal-jordan'
-@route '/superheroes/:id', 'superheroes', {conditions: {id: ['green-lantern', 'alan-scott', 'hal-jordan']}}
+@route '/superheroes/:id', 'superheroes#show', {conditions: {':id': ['green-lantern', 'alan-scott', 'hal-jordan']}}
 
 # Restrict the id to any string matching the regular expression /green/i
-@route '/superheroes/:id', 'superheroes', {conditions: {id: /green/i}}
+@route '/superheroes/:id', 'superheroes#show', {conditions: {':id': /green/i}}
 
 # Restrict the id to an integer
-@route '/superheroes/:id', 'superheroes', {conditions: {id: (id, request) -> parseInt(id) is id}}
+@route '/superheroes/:id', 'superheroes#show', {conditions: {':id': (id, request) -> parseInt(id).toString() is id}}
 ```
 
 ### Resources Routing

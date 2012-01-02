@@ -3,6 +3,9 @@ URL = require 'url'
 Route = require './route'
 
 conditions = {
+  domain: (req, condition) ->
+    return condition(req.parsed.domain, req) if typeof condition is 'function'
+    req.parsed.domain is condition
   subdomain: (req, condition) ->
     return condition(req.parsed.subdomain, req) if typeof condition is 'function'
     req.parsed.subdomain is condition
@@ -44,8 +47,9 @@ class MatchingRoutes
         r = _(matched_route.node.methods[method]).find (r) =>
           return true unless r.conditions?
           for type, condition of r.conditions
-            throw new Error('Unknown condition type: ' + type) unless module.exports.conditions[type]?
-            return false unless module.exports.conditions[type](@req, condition)
+            unless type[0] is ':'
+              throw new Error('Unknown condition type: ' + type) unless module.exports.conditions[type]?
+              return false unless module.exports.conditions[type](@req, condition)
           true
         return [matched_route, r.route] if r?
       [null, null]
@@ -75,7 +79,7 @@ class ParamNode extends Node
   
   constructor: (segment, options) ->
     super
-    condition = options.conditions.params[segment] if options.conditions?.params?[segment]?
+    condition = options.conditions[":#{segment}"] if options.conditions?[":#{segment}"]?
     @matcher = ParamNode.create_matcher(condition)
 
   satisfies_condition: (segment, req) ->
@@ -83,6 +87,11 @@ class ParamNode extends Node
 
 class Configurator
   constructor: (@root, @options) ->
+
+  domain: (domain, routing_method) ->
+    throw new Error('Cannot have more than one domain condition in a route') if @options?.conditions?.domain?
+    options = _.extend(@options || {}, {conditions: {domain: domain}})
+    routing_method.call(new Configurator(@root, options))
 
   subdomain: (subdomain, routing_method) ->
     throw new Error('Cannot have more than one subdomain condition in a route') if @options?.conditions?.subdomain?
