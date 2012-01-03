@@ -21,7 +21,7 @@ if not global.Caboose?
   Caboose.path.views = Caboose.path.app.join('views')
 
   Caboose.registry = require './lib/registry'
-  Caboose.app = new Application()
+  Caboose.app = new Application(JSON.parse(new Path().join('package.json').read_file_sync('utf8')).name)
 
 exports.cli = require './lib/cli'
 exports.registry = global.Caboose.registry

@@ -61,6 +61,9 @@ In all other cases all code can be written in javascript rather than coffeescrip
 ## Boot Process
 
 - Parse routes from config/routes.coffee
+- Read json files into config
+  - Read all json files in config directory
+  - Read all json files in config/environments/[current environment] directory
 - Execute configuration files
   - Execute config/application.coffee
   - Execute config/environments/[current environment].coffee (if it exists)

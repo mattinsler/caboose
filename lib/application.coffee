@@ -3,7 +3,7 @@ express = require 'express'
 Router = require './server/router'
 
 module.exports = class Application
-  constructor: ->
+  constructor: (@name) ->
     @_state = {}
     @_post_boot = []
     @registry = require './registry'
@@ -11,12 +11,21 @@ module.exports = class Application
   post_boot: (method) ->
     @_post_boot.push method
   
-  # read_config_files: (callback) ->
-  #   for file in Caboose.path.config.readdir_sync()
-  #     
+  read_config_files: (config) ->
+    files = Caboose.path.config.readdir_sync()
+    env_dir = Caboose.path.config.join('environments', Caboose.env)
+    files = files.concat(env_dir.readdir_sync()) if env_dir.exists_sync() and env_dir.is_directory_sync()
+
+    for file in files
+      if file.extension is 'json'
+        config[file.basename] = JSON.parse(file.read_file_sync('utf8'))
 
   configure: (callback) ->
     @config = {}
+    try
+      @read_config_files @config
+    catch e
+      return callback(e)
     index = 0
     files = [
       Caboose.path.config.join('application'),
