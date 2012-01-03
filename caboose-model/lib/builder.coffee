@@ -1,14 +1,11 @@
 Model = require './model'
 
 build = ->
-  # pre-build plugins
-  for k, v of @properties
-    Builder.plugins[k].pre_build.apply this, v if Builder.plugins[k].pre_build?
-
   model = class extends Model
     constructor: ->
       super
       @init()
+  Object.defineProperty model, '__super__', {enumerable: false}
   model::init = ->
     Object.defineProperty this, '_type', {value: model, enumerable: false}
   # non-enumerable Model properties
@@ -16,53 +13,61 @@ build = ->
     Object.defineProperty model, prop, {value: Model[prop], enumerable: false}
   # private properties
   Object.defineProperty model, '_type', {value: model, enumerable: false}
-  for prop in ['name', 'properties', 'before_save']
+  for prop in ['name', 'properties']
     Object.defineProperty model, "_#{prop}", {value: this[prop], enumerable: false}
-
-  for k, v of @instance_methods
-    model::[k] = v
-  for k, v of @statics
-    model[k] = v
-
-  @model = model
-  # post-build plugins
-  for k, v of @properties
-    Builder.plugins[k].post_build.apply this, v if Builder.plugins[k].post_build?
-
-  Object.defineProperty @model, '__super__', {enumerable: false}
-  @model
+  
+  plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
+  
+  model
 
 class Builder
-  @plugins = {
-    store_in: {
-      post_build: (collection_name) ->
-        Object.defineProperty @model, '_collection_name', {value: collection_name, enumerable: false}
-    }
-  }
+  @add_plugin: (opts) ->
+    if opts.name?
+      for plugin in @plugins
+        throw new Error("[Plugin #{opts.name}] another caboose-model plugin already exists with the same name") if opts.name is plugin.name
+    @plugins.push opts
   
   constructor: (name) ->
     Object.defineProperty @, 'name', {value: name, enumerable: false}
     
-    for field in Object.keys(Builder.plugins)
-      do (field) =>
-        this[field] = ->
-          @properties[field] = Array::slice.call arguments
-          this
+    plugin.initialize?.apply(this) for plugin in Builder.plugins
     
-    Object.defineProperty @, 'statics', {value: {}, enumerable: false}
-    Object.defineProperty @, 'instance_methods', {value: {}, enumerable: false}
     Object.defineProperty @, 'properties', {value: {}, enumerable: false}
-    Object.defineProperty @, 'before_save', {value: [], enumerable: false}
     Object.defineProperty @, 'build', {value: build, enumerable: false}
 
-  static: (name, method) ->
-    @statics[name] = method
-    this
-  instance: (name, method) ->
-    @instance_methods[name] = method
-    this
-  before_save: (method) ->
-    @before_save.push method
-    this
+    for plugin in Builder.plugins
+      do (plugin) =>
+        if plugin.name? and plugin.execute?
+          @[plugin.name] = ->
+            plugin.execute.apply(this, arguments)
+            this
+
+Builder.plugins = [{
+  name: 'static'
+  initialize: -> Object.defineProperty @, '_statics', {value: {}, enumerable: false}
+  execute: (name, method) ->
+    @_statics[name] = method
+  build: (model) ->
+    for k, v of @_statics
+      model[k] = v
+}, {
+  name: 'instance'
+  initialize: -> Object.defineProperty @, '_instances', {value: {}, enumerable: false}
+  execute: (name, method) -> @_instances[name] = method
+  build: (model) ->
+    for k, v of @_instances
+      model::[k] = v
+}, {
+  name: 'before_save',
+  initialize: -> Object.defineProperty @, '_before_saves', {value: [], enumerable: false}
+  execute: (method) -> @_before_saves.push method
+  build: (model) ->
+    Object.defineProperty model, '_before_save', {value: @_before_saves, enumerable: false}
+}, {
+  name: 'store_in',
+  execute: (collection_name) -> @_store_in = collection_name
+  build: (model) ->
+    Object.defineProperty model, '_collection_name', {value: @_store_in, enumerable: false}
+}]
 
 module.exports = Builder

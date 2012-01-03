@@ -23,6 +23,13 @@ module.exports = {
     method: ->
       console.log '[CABOOSE] ' + 'install'.green + ' caboose-model'
       
+      config_file = Caboose.path.config.join('caboose-model.json')
+      if config_file.exists_sync()
+        console.log '          ' + 'exists'.grey + ' ' + config_file
+      else
+        console.log '          ' + 'create'.green + ' ' + config_file
+        config_file.write_file_sync JSON.stringify({host: 'localhost', port: 27017, database: Caboose.app.name}, null, 2), 'utf8'
+      
       initializer_file = Caboose.path.config.join('initializers', 'caboose-model.coffee')
       if initializer_file.exists_sync()
         console.log '          ' + 'exists'.grey + ' ' + initializer_file

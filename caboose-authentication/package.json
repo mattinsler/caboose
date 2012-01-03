@@ -11,12 +11,11 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "caboose-model": "0.0.x",
-    "bcrypt": "0.2.4",
-    "rbytes": "0.0.2"
+    "caboose-model": "latest",
+    "bcrypt": "latest"
   },
   "devDependencies": {
-    "vows": "0.5.8"
+    "vows": "latest"
   },
   "main": "index"
 }

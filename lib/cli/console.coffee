@@ -4,19 +4,15 @@ exports.description = 'Open a console with the environment loaded'
 
 load_models = (callback) ->
   return callback([]) unless Caboose.path.models.exists_sync()
-  
-  console.log '------------------------------'.grey
-  console.log '| '.grey + 'Loading Models'.blue
-  console.log '------------------------------'.grey
+  console.log 'Loading Models'.blue
 
   models = []
   for file in Caboose.path.models.readdir_sync()
     if file.extension in ['js', 'coffee']
       model = Caboose.registry.get file.basename
-      console.log '| '.grey + 'Loaded: '.blue + model._name.green
+      console.log "        #{model._name}".green
       models.push model
   
-  console.log '------------------------------'.grey
   callback models
 
 exports.method = ->
