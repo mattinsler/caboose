@@ -35,25 +35,20 @@ module.exports = class Application
     ]
     
     next = =>
-      # console.log 'next ' + index
       return callback() if index is files.length
       try
-        # console.log 'call config'
         files[index++].require() @config, next
-        # console.log index
       catch e
-        console.log 'caught exception'
-        console.log e.stack
         return callback(e) unless /Cannot find module/.test(e.message)
-        # console.log 'calling next'
         next()
     next()
   
   load_plugins: ->
     package = JSON.parse(Caboose.root.join('package.json').read_file_sync('utf8'))
-    if package['caboose-plugins']?
+    @plugins = package['caboose-plugins']
+    if @plugins?
       console.log 'Loading Plugins'.blue
-      for p in package['caboose-plugins']
+      for p in @plugins
         plugin = require(p)
         throw new Error("#{p} is not a caboose plugin".red) unless plugin['caboose-plugin']?
         if plugin['caboose-plugin'].initialize?

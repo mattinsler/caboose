@@ -22,7 +22,13 @@ npm_install = (plugin_name, callback) ->
       console.log "Successfully installed #{plugin_name}!".green
       callback()
 
-exports.method = (plugin_name, command, args...) ->
+list = ->
+  console.log '[CABOOSE] Installed Plugins'
+  console.log '        ' + Caboose.app.plugins.join('\n        ') if Caboose.app.plugins?.length > 0
+
+exports.method = (command, plugin_name, args...) ->
+  return list() unless command? or command is 'list'
+  
   return console.log('Must specify a plugin name'.red) unless plugin_name?
 
   [plugin_name, command] = plugin_name.split(':') if !command? and /^[^:]+:[^:]+$/.test(plugin_name)

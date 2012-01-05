@@ -20,7 +20,8 @@
     "mailer": "latest",
     "underscore": "latest",
     "consolidate": "latest",
-    "npm": "latest"
+    "npm": "latest",
+    "kexec": "latest"
   },
   "devDependencies": {
     "vows": "latest"

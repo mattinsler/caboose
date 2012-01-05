@@ -14,8 +14,5 @@
     "mongodb": "latest",
     "colors": "latest"
   },
-  "devDependencies": {
-    "vows": "latest"
-  },
   "main": "index"
 }

@@ -11,11 +11,7 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "caboose-model": "latest",
     "bcrypt": "latest"
-  },
-  "devDependencies": {
-    "vows": "latest"
   },
   "main": "index"
 }

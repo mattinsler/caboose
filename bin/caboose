@@ -1,12 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env node
 
-node_modules=`pwd`/node_modules
-
-if [ $(echo $NODE_PATH | tr ':' '\n' | grep -e "^${node_modules}$" | wc -l) -eq 0 ]; then
-  NODE_PATH=$node_modules $0 $@
-else
-  app=`readlink $0`
-  [ ! -e $app ] && [ $(echo $app | grep -e '^\.' | wc -l) -eq 1 ] && app=`dirname $0`/$app
-  app=${app:-$0}
-  /usr/bin/env node $app.js $@
-fi
+require('coffee-script');
+require('../index').cli.exec();

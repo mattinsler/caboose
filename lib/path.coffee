@@ -52,6 +52,12 @@ module.exports = class Path
 
   readdir_sync: ->
     fs.readdirSync(@path).map (f) => @.join(f)
+  
+  readlink: (callback) ->
+    fs.readlink @path, callback
+  
+  readlink_sync: ->
+    fs.readlinkSync @path
 
   read_file_sync: (encoding = undefined) ->
     fs.readFileSync @path, encoding
