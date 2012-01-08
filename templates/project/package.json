@@ -1,10 +1,5 @@
 {
   "name": "YOUR-APP-NAME",
   "version": "0.0.1",
-  "private": true,
-  "dependencies": {
-    "coffee-script": "1.2.0",
-    "caboose": "0.2.0",
-    "express": "2.5.2"
-  }
+  "private": true
 }

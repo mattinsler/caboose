@@ -1,8 +1,6 @@
 return module.exports = global['caboose-model'] if global['caboose-model']?
 
 caboose_model =
-  version: [0, 1, 1]
-
   Builder: require './lib/builder'
   Compiler: require './lib/model_compiler'
   Connection: require './lib/connection'
@@ -17,11 +15,16 @@ caboose_model =
     this
   
   'caboose-plugin': {
-    cli: require './lib/cli'
-    install: ->
-      
+    install: (util, logger) ->
+      util.create_file(
+        Caboose.path.config.join('caboose-model.json'),
+        JSON.stringify({host: 'localhost', port: 27017, database: Caboose.app.name}, null, 2)
+      )
+
     initialize: ->
       if Caboose?
+        require './lib/cli'
+        
         Caboose.registry.register 'model', {
           get: (parsed_name) ->
             name = parsed_name.join('_')

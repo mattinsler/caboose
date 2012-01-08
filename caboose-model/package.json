@@ -11,8 +11,7 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "mongodb": "latest",
-    "colors": "latest"
+    "mongodb": "latest"
   },
   "main": "index"
 }

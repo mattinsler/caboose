@@ -1,12 +1,8 @@
 require 'colors'
+util = Caboose.util
+logger = Caboose.logger
 
 exports.description = 'Run plugin scripts'
-
-help = (plugin_name, plugin) ->
-  console.log '[CABOOSE] ' + "Commands available for #{plugin_name}".blue
-  console.log()
-  console.log '  ' + Object.keys(plugin.cli).join('\n  ')
-  console.log()
 
 npm_install = (plugin_name, callback) ->
   npm = require('npm')
@@ -22,33 +18,35 @@ npm_install = (plugin_name, callback) ->
       console.log "Successfully installed #{plugin_name}!".green
       callback()
 
-list = ->
-  console.log '[CABOOSE] Installed Plugins'
-  console.log '        ' + Caboose.app.plugins.join('\n        ') if Caboose.app.plugins?.length > 0
+commands = {
+  list: ->
+    logger.title 'Installed Plugins'
+    logger.message Caboose.app.plugins if Caboose.app.plugins?.length > 0
+
+  install: (plugin_name) ->
+    return logger.error('Must specify a plugin name') unless plugin_name?
+    
+    if Caboose.root.join('node_modules', plugin_name).exists_sync()
+      try
+        plugin = require(plugin_name)
+        return logger.error("#{plugin_name} is not a caboose plugin") unless plugin['caboose-plugin']?
+    
+        logger.title "Installing #{plugin_name}..."
+        plugin['caboose-plugin'].install(util, logger) if plugin['caboose-plugin'].install?
+        return logger.title "Installed #{plugin_name}..."
+    
+      catch e
+        console.error e.stack
+        return logger.error("Error while trying to install plugin #{plugin_name}: #{e.message}") unless e.message is "Cannot find module '#{plugin_name}'"
+    
+    logger.error "#{plugin_name} is not installed.  Installing from npm..."
+    npm_install plugin_name, (err) ->
+      if err?
+        logger.error "An error occured while running npm install #{plugin_name}"
+        return logger.error(err.stack)
+      commands.install(plugin_name) # Try again
+}
 
 exports.method = (command, plugin_name, args...) ->
-  return list() unless command? or command is 'list'
-  
-  return console.log('Must specify a plugin name'.red) unless plugin_name?
-
-  [plugin_name, command] = plugin_name.split(':') if !command? and /^[^:]+:[^:]+$/.test(plugin_name)
-
-  original_paths = module.paths.slice()
-  try
-    module.paths = [Caboose.root.path]
-    plugin = require(plugin_name)
-    module.paths = original_paths
-  catch e
-    module.paths = original_paths
-    return console.log("Error while processing plugin #{plugin_name}".red) unless e.message is "Cannot find module '#{plugin_name}'"
-    
-    console.log "Could not find a plugin named #{plugin_name}".red
-    return npm_install plugin_name, (err) ->
-      return console.log(err.message) if err?
-      exports.method(plugin_name, command, args...)
-      
-  return console.log("#{plugin_name} is not setup to be a caboose plugin".red) unless plugin?.cli?
-
-  return help(plugin_name, plugin) unless command? and plugin.cli[command]?
-
-  plugin.cli[command].method(args...)
+  return logger.error("Invalid command: #{command}") if command? and !commands[command]?
+  commands[if command? then command else 'list'](plugin_name, args...)

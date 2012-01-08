@@ -1,6 +1,6 @@
 _ = require 'underscore'
 Path = require '../path'
-consolidate = require('consolidate').render
+consolidate = require 'consolidate'
 
 resolve_view = (root, view, format, is_partial) ->
   view = new Path(view)

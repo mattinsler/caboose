@@ -17,8 +17,7 @@ print_routes = (node, path = '', result = []) ->
   result
 
 exports.method = ->
-  Caboose.app.initialize ->
-    console.log(cliff.stringifyObjectRows(
-      print_routes(Caboose.app.router.root),
-      ['Method', 'Path', 'Controller', 'Action']
-    ))
+  console.log(cliff.stringifyObjectRows(
+    print_routes(Caboose.app.router.root),
+    ['Method', 'Path', 'Controller', 'Action']
+  ))

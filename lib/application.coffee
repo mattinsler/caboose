@@ -1,4 +1,3 @@
-require 'colors'
 _ = require 'underscore'
 Path = require './path'
 express = require 'express'
@@ -47,13 +46,11 @@ module.exports = class Application
     package = JSON.parse(Caboose.root.join('package.json').read_file_sync('utf8'))
     @plugins = package['caboose-plugins']
     if @plugins?
-      console.log 'Loading Plugins'.blue
       for p in @plugins
         plugin = require(p)
         throw new Error("#{p} is not a caboose plugin".red) unless plugin['caboose-plugin']?
         if plugin['caboose-plugin'].initialize?
           plugin['caboose-plugin'].initialize()
-          console.log "        #{p}".green
   
   run_initializers_in_path: (initializers_path, callback) ->
     return callback() unless initializers_path.exists_sync()
@@ -108,6 +105,13 @@ module.exports = class Application
       method this
 
     callback()
-    
+
+  load_models: ->
+    models = []
+    if Caboose.path.models.exists_sync()
+      for file in Caboose.path.models.readdir_sync()
+        models.push(Caboose.registry.get(file.basename)) if file.extension in ['js', 'coffee']
+    models
+  
   address: ->
     @http.address()
