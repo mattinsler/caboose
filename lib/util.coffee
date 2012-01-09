@@ -11,6 +11,23 @@ util = module.exports =
       while (d = dirs.shift())
         logger.file_mkdir(d)
         d.mkdir_sync(mode)
+
+  copy_dir: (from, to) ->
+    from = new Path(from) unless from instanceof Path
+    to = new Path(to) unless to instanceof Path
+    util.mkdir(to)
+    
+    _copy_dir = (from, to) ->
+      for file in from.readdir_sync()
+        if file.filename[0] isnt '.'
+          to_file = to.join(file.filename)
+          if file.is_directory_sync()
+            util.mkdir to_file
+            _copy_dir file, to_file
+          else
+            file.copy_sync to_file
+            logger.file_create to_file
+    _copy_dir from, to
     
   create_file: (file_path, content, encoding = 'utf8') ->
     file_path = new Path(file_path) unless file_path instanceof Path
@@ -22,6 +39,9 @@ util = module.exports =
       logger.file_create(file_path)
       file_path.write_file_sync content, encoding
   
+  has_package: (root = Caboose.root) ->
+    (if root instanceof Path then root else new Path(root)).join('package.json').exists_sync()
+  
   read_package: (root = Caboose.root) ->
     root = new Path(root) unless root instanceof Path
     package_file = root.join('package.json')
@@ -30,8 +50,9 @@ util = module.exports =
     catch e
       throw new Error("Had trouble reading or parsing #{package_file}")
   
-  write_package: (data) ->
-    package_file = Caboose.root.join('package.json')
+  write_package: (data, root = Caboose.root) ->
+    root = new Path(root) unless root instanceof Path
+    package_file = root.join('package.json')
     try
       logger.file_alter package_file
       package_file.write_file_sync(JSON.stringify(data, null, 2), 'utf8')

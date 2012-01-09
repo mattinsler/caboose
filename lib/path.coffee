@@ -80,8 +80,15 @@ module.exports = class Path
   # HELPER METHODS
   is_directory_empty: (callback) ->
     @readdir (err, files) ->
-      throw err if err and 'ENOENT' isnt err.code
-      callback(files.length is 0)
+      return callback(err) if err? and 'ENOENT' isnt err.code
+      callback(null, files.length is 0)
+  
+  is_directory_empty_sync: ->
+    try
+      return @readdir_sync().length is 0
+    catch e
+      throw e if e? and 'ENOENT' isnt e.code
+    false
   
   copy: (to, callback) ->
     src = @

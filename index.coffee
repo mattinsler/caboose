@@ -21,7 +21,6 @@ unless node_path[node_modules[0]]? and node_path[node_modules[1]]?
   cmd = "NODE_PATH=#{Object.keys(node_path).join(':')} #{exec_path} #{process.argv.slice(2).join(' ')}"
   require('kexec') cmd
 
-
 Application = require './lib/application'
 
 if not global.Caboose?
@@ -47,8 +46,7 @@ if not global.Caboose?
   Caboose.util = require './lib/util'
 
   Caboose.registry = require './lib/registry'
-  package_file = Caboose.root.join('package.json')
-  Caboose.app = new Application(JSON.parse(package_file.read_file_sync('utf8')).name) if package_file.exists_sync()
+  Caboose.app = new Application(Caboose.util.read_package().name) if Caboose.util.has_package()
   Caboose.cli = require './lib/cli'
 
 exports.registry = global.Caboose.registry

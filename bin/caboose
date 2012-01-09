@@ -3,6 +3,12 @@
 require('coffee-script');
 require('../index');
 
-Caboose.app.initialize(function(app) {
+function start() {
   Caboose.cli.exec();
-});
+}
+
+if (Caboose.app) {
+  start();
+} else {
+  Caboose.app.initialize(start);
+}
