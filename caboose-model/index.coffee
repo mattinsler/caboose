@@ -1,21 +1,16 @@
 return module.exports = global['caboose-model'] if global['caboose-model']?
 
-caboose_model =
-  Builder: require './lib/builder'
-  Compiler: require './lib/model_compiler'
-  Connection: require './lib/connection'
-  Model: require './lib/model'
-  Query: require './lib/query'
-
+module.exports = global['caboose-model'] = caboose_model =
   connection: null
 
   create: (name) -> new caboose_model.Builder(name)
   configure: (config) ->
-    caboose_model.config = config
-    this
+    @config = config
+    @
   
   'caboose-plugin': {
     install: (util, logger) ->
+      util.mkdir(Caboose.path.models)
       util.create_file(
         Caboose.path.config.join('caboose-model.json'),
         JSON.stringify({host: 'localhost', port: 27017, database: Caboose.app.name}, null, 2)
@@ -27,6 +22,7 @@ caboose_model =
         
         Caboose.registry.register 'model', {
           get: (parsed_name) ->
+            return null unless Caboose.path.models.exists_sync()
             name = parsed_name.join('_')
             try
               files = Caboose.path.models.readdir_sync()
@@ -38,9 +34,13 @@ caboose_model =
             catch e
               console.error e.stack
         }
-
+      
       if Caboose?.app?.config?['caboose-model']?
         caboose_model.configure Caboose.app.config['caboose-model']
   }
 
-global['caboose-model'] = module.exports = caboose_model
+caboose_model.Builder = require './lib/builder'
+caboose_model.Compiler = require './lib/model_compiler'
+caboose_model.Connection = require './lib/connection'
+caboose_model.Model = require './lib/model'
+caboose_model.Query = require './lib/query'

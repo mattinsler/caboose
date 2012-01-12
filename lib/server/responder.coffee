@@ -17,7 +17,7 @@ resolve_layout = (controller, format) ->
   
   c = Caboose.registry.get(controller._name)
   while c
-    layout = resolve_view(layouts_dir, c.short_name, format)
+    layout = resolve_view(layouts_dir, c._short_name, format)
     return layout if layout?
     c = Caboose.registry.get(c._extends)
   null
@@ -74,6 +74,7 @@ render = (controller, data, options, callback) ->
   locals.partial = render_partial
   
   view = resolve_view(controller._short_name, controller._view, controller.params.format)
+  return callback(new Error("No view found for #{controller._short_name} #{controller._view} #{controller.params.format}")) unless view?
   consolidate[view.extension] view.path, locals, (err, text) ->
     return done(err, text) if err? or (options?.layout? and !options.layout)
     

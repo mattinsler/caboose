@@ -4,14 +4,14 @@ build = ->
   controller = class extends Controller
   # Object.defineProperty controller, '__super__', {enumerable: false}
   # private properties
-  for prop in ['name', 'extends']
+  for prop in ['name', 'short_name', 'extends']
     controller["_#{prop}"] = @[prop]
   
   Builder.plugins[x].build?.call(@, controller) for x in [Builder.plugins.length - 1..0]
   
   controller::_name = @name
+  controller::_short_name = @short_name
   controller::_extends = @extends
-  controller::_short_name = Caboose.registry.split(@name).slice(0, -1).join('_')
   Object.defineProperty(controller::, 'request', {get: -> @_responder.req})
   Object.defineProperty(controller::, 'response', {get: -> @_responder.res})
   Object.defineProperty(controller::, 'cookies', {get: -> @_responder.req.cookies})
@@ -33,6 +33,7 @@ class Builder
   constructor: (@name, @extends) ->
     Object.defineProperty @, 'name', {enumerable: false}
     Object.defineProperty @, 'extends', {enumerable: false}
+    Object.defineProperty @, 'short_name', {value: Caboose.registry.split(@name).slice(0, -1).join('_'), enumerable: false}
     
     plugin.initialize?.apply(this) for plugin in Builder.plugins
     
