@@ -1,5 +1,8 @@
+Responder = require '../server/responder'
+
 class Controller
-  init: ->
+  constructor: (req, res, next) ->
+    @_responder = new Responder(req, res, next)
     @flash = @session.flash ? {}
     delete @session.flash
 
@@ -10,13 +13,14 @@ class Controller
     x = 0
     next = (err) =>
       return @error err if err?
-      return this[action].call this if x is @_filters.length
-      filter = @_filters[x++]
+      return this[action].call(this) if x is @_before_filters.length
+      filter = @_before_filters[x++]
       return next() if filter.only? and not (action in filter.only)
       if typeof filter.method is 'string'
-        this[filter.method].call this, next
+        return next(new Error("Filter #{filter.method} does not exist")) unless this[filter.method]?
+        this[filter.method].call(this, next)
       else if typeof filter.method is 'function'
-        filter.method.call this, next
+        filter.method.call(this, next)
     next()
 
   not_found: (err) ->
@@ -37,7 +41,7 @@ class Controller
       options = data
       data = view
       
-    @_responder.render this, data, options
+    @_responder.render(this, data, options)
   redirect_to: (url, options) ->
     if options?
       @session.flash = options

@@ -1,3 +1,4 @@
+_ = require 'underscore'
 Path = require './path'
 logger = Caboose.logger
 
@@ -59,10 +60,14 @@ util = module.exports =
     catch e
       throw new Error("Had trouble writing #{package_file}")
   
+  alter_package: (alter_method, root = Caboose.root) ->
+    package = util.read_package(root)
+    alter_method(package)
+    util.write_package(package, root)
+  
   add_plugin_to_package: (plugin_name, version) ->
-    package = util.read_package()
-    package.dependencies = {} unless package.dependencies?
-    package.dependencies[plugin_name] = version
-    package['caboose-plugins'] = [] unless package['caboose-plugins']?
-    package['caboose-plugins'].push(plugin_name) unless _(package['caboose-plugins']).find((p) -> p is plugin_name)?
-    util.write_package package
+    util.alter_package (package) ->
+      package.dependencies = {} unless package.dependencies?
+      package.dependencies[plugin_name] = version
+      package['caboose-plugins'] = [] unless package['caboose-plugins']?
+      package['caboose-plugins'].push(plugin_name) unless _(package['caboose-plugins']).find((p) -> p is plugin_name)?

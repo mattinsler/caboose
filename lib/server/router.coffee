@@ -163,18 +163,21 @@ module.exports = class Router
     routing_method.call(new Configurator(@root))
 
   route: (req, res, next) ->
-    req.parsed = URL.parse("http://#{req.headers.host}#{req.url}", true)
-    domains = req.parsed.hostname.split('.')
-    x = if domains.slice(-1)[0] is 'localhost' then -1 else -2
-    req.parsed.domain = domains.slice(x).join('.')
-    req.parsed.subdomain = domains.slice(0, x).join('.')
-    req.params = {} unless req.params?
+    try
+      req.parsed = URL.parse("http://#{req.headers.host}#{req.url}", true)
+      domains = req.parsed.hostname.split('.')
+      x = if domains.slice(-1)[0] is 'localhost' then -1 else -2
+      req.parsed.domain = domains.slice(x).join('.')
+      req.parsed.subdomain = domains.slice(0, x).join('.')
+      req.params = {} unless req.params?
 
-    matching = new MatchingRoutes(@root, req)
-    for segment in req.parsed.pathname.split('/').filter((s) -> s isnt '')
-      return next() unless matching.next_segment(segment)
+      matching = new MatchingRoutes(@root, req)
+      for segment in req.parsed.pathname.split('/').filter((s) -> s isnt '')
+        return next() unless matching.next_segment(segment)
     
-    route = matching.route(req.method)
-    return next() unless route?
+      route = matching.route(req.method)
+      return next() unless route?
 
-    route.respond(req, res, next)
+      route.respond(req, res, next)
+    catch e
+      console.error(e.stack) if e?

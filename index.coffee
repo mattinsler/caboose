@@ -48,10 +48,17 @@ if not global.Caboose?
   Caboose.registry = require './lib/registry'
   Caboose.app = new Application(Caboose.util.read_package().name) if Caboose.util.has_package()
   Caboose.cli = require './lib/cli'
+  
+  Caboose.controller = {
+    create: (name, extends_name = 'Controller') -> new exports.internal.controller.builder(name, extends_name)
+  }
 
 exports.registry = global.Caboose.registry
 exports.path = Path
 
 exports.internal = {
-  compiler: require('./lib/compiler')
+  compiler: require './lib/compiler'
+  controller: {
+    builder: require './lib/controller/builder'
+  }
 }

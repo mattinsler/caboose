@@ -33,6 +33,7 @@ commands = {
     
         logger.title "Installing #{plugin_name}..."
         plugin['caboose-plugin'].install(util, logger) if plugin['caboose-plugin'].install?
+        util.add_plugin_to_package(plugin_name, util.read_package(Caboose.root.join('node_modules', plugin_name)).version)
         return logger.title "Installed #{plugin_name}..."
     
       catch e

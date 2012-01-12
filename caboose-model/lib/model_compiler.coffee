@@ -37,8 +37,9 @@ class ModelCompiler extends Compiler
     matches = /class\W+([^\W]+)\W+extends\W+([^\W]*Model)/.exec(@code)
     throw new Error 'Could not find a model defined' unless matches?
     @name = matches[1]
-    # @extends = matches[2]
+    @extends = matches[2]
     scope_var = "__scope_#{@name}__"
+    @code = @code.replace(/class\W+([^\W]+)\W+extends\W+([^\W]*Model)/, "class @#{@name} extends #{@extends}")
     
     indent = /\n([ \t]+)/.exec(@code)
     indent = if indent? then indent[1] else '  '
@@ -61,11 +62,20 @@ class ModelCompiler extends Compiler
         @scope[k] = (args...) =>
           throw new Error("#{k} is not defined") if @scope[scope_var] isnt true
           @builder[k](args...)
+    
+    while import_call = /import\W+('([^']+)'|"([^"]+)")/.exec(@code)
+      import_object = global.registry.get import_call[2]
+      import_object = import_object.class if import_object.type is 'controller'
+      @scope[import_call[2]] = import_object
+      @code = @code.replace import_call[0], ''
 
     # @apply_scope_plugins 'models'
     # @apply_precompile_plugins 'models'
 
   postcompile: ->
+    methods = Object.keys(@scope[@name]::).filter (k) -> k isnt 'constructor'
+    for method in methods
+      @builder.instance method, @scope[@name]::[method]
     # @apply_postcompile_plugins 'models'
   
   respond: ->

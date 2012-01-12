@@ -19,7 +19,7 @@ resolve_layout = (controller, format) ->
   while c
     layout = resolve_view(layouts_dir, c.short_name, format)
     return layout if layout?
-    c = Caboose.registry.get(c.extends)
+    c = Caboose.registry.get(c._extends)
   null
 
 compile_helpers = (controller) ->
@@ -88,6 +88,7 @@ class Responder
     @_renderers = {
       html: (controller, data, options) =>
         render controller, data, options, (err, html) =>
+          return console.error(err.stack) if err?
           @res.contentType 'text/html'
           @res.send html, 200
       json: (controller, data, options) =>

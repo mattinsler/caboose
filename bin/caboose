@@ -7,8 +7,4 @@ function start() {
   Caboose.cli.exec();
 }
 
-if (Caboose.app) {
-  start();
-} else {
-  Caboose.app.initialize(start);
-}
+Caboose.app ? Caboose.app.initialize(start) : start();

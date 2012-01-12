@@ -4,16 +4,16 @@ build = ->
   model = class extends Model
     constructor: ->
       super
-      @init()
+      @__init__()
   Object.defineProperty model, '__super__', {enumerable: false}
-  model::init = ->
+  model::__init__ = ->
     Object.defineProperty this, '_type', {value: model, enumerable: false}
   # non-enumerable Model properties
   for prop in ['_ensure_collection']
     Object.defineProperty model, prop, {value: Model[prop], enumerable: false}
   # private properties
   Object.defineProperty model, '_type', {value: model, enumerable: false}
-  for prop in ['name', 'properties']
+  for prop in ['name']
     Object.defineProperty model, "_#{prop}", {value: this[prop], enumerable: false}
   
   plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
@@ -32,7 +32,6 @@ class Builder
     
     plugin.initialize?.apply(this) for plugin in Builder.plugins
     
-    Object.defineProperty @, 'properties', {value: {}, enumerable: false}
     Object.defineProperty @, 'build', {value: build, enumerable: false}
 
     for plugin in Builder.plugins
