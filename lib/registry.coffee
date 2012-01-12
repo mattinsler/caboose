@@ -1,4 +1,5 @@
 _ = require 'underscore'
+ControllerCompiler = require './controller/controller_compiler'
 
 cache = exports.cache = {}
 registered_getters = exports.registered_getters = []
@@ -54,7 +55,7 @@ exports.register 'controller', {
       controller_file = files.filter((f) -> f.basename is name)
       controller_file = if controller_file.length > 0 then controller_file[0] else null
       return null unless controller_file?
-      # return caboose_model.Compiler.compile(model_file) if model_file.extension is 'coffee'
+      return ControllerCompiler.compile(controller_file) if controller_file.extension is 'coffee'
       controller_file.require()
     catch e
       console.error e.stack
