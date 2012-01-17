@@ -1,6 +1,6 @@
 caboose = require 'caboose'
 Path = caboose.path
-Compiler = caboose.internal.compiler
+Compiler = caboose.Compiler
 Builder = require './builder'
 # 
 # Model = require 'caboose-model'

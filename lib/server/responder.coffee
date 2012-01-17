@@ -23,9 +23,7 @@ resolve_layout = (controller, format) ->
   null
 
 compile_helpers = (controller) ->
-  helpers = {}
-  _.extend(helpers, helper) for helper in controller._helpers
-  helpers
+  _.extend.bind(null, {}).apply(null, controller._helpers)
 
 render = (controller, data, options, callback) ->
   counter = 0
@@ -49,8 +47,7 @@ render = (controller, data, options, callback) ->
     ++render_count
 
     partial_var = new Path(partial_view).filename.replace(/^\_+/, '')
-    partial_locals = _.extend({}, compile_helpers(controller), partial_data || data || controller)
-    partial_locals.partial = render_partial
+    partial_locals = _.extend({partial: render_partial}, compile_helpers(controller), partial_data || data || controller)
     partial_view = resolve_view(controller._short_name, partial_view, controller.params.format, true)
     partial_key = "PARTIAL[#{render_count}]"
     
@@ -69,10 +66,10 @@ render = (controller, data, options, callback) ->
         done(err, partial_text, partial_key)
     
     partial_key
-  
-  locals = _.extend({}, compile_helpers(controller), data || controller)
-  locals.partial = render_partial
-  
+
+  locals = _.extend({partial: render_partial}, compile_helpers(controller), data || controller)
+  # console.log locals
+
   view = resolve_view(controller._short_name, controller._view, controller.params.format)
   return callback(new Error("No view found for #{controller._short_name} #{controller._view} #{controller.params.format}")) unless view?
   consolidate[view.extension] view.path, locals, (err, text) ->

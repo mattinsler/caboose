@@ -4,22 +4,21 @@ build = ->
   controller = class extends Controller
   # Object.defineProperty controller, '__super__', {enumerable: false}
   # private properties
-  for prop in ['name', 'short_name', 'extends']
-    controller["_#{prop}"] = @[prop]
+  controller["_#{prop}"] = @[prop] for prop in ['name', 'short_name', 'extends']
   
   Builder.plugins[x].build?.call(@, controller) for x in [Builder.plugins.length - 1..0]
   
   controller::_name = @name
   controller::_short_name = @short_name
   controller::_extends = @extends
-  Object.defineProperty(controller::, 'request', {get: -> @_responder.req})
-  Object.defineProperty(controller::, 'response', {get: -> @_responder.res})
-  Object.defineProperty(controller::, 'cookies', {get: -> @_responder.req.cookies})
-  Object.defineProperty(controller::, 'session', {get: -> @_responder.req.session})
-  Object.defineProperty(controller::, 'body', {get: -> @_responder.req.body})
-  Object.defineProperty(controller::, 'params', {get: -> @_responder.req.params})
-  Object.defineProperty(controller::, 'query', {get: -> @_responder.req.query})
-  Object.defineProperty(controller::, 'headers', {get: -> @_responder.req.headers})
+  Object.defineProperty(controller::, 'request', {enumerable: true, get: -> @_responder.req})
+  Object.defineProperty(controller::, 'response', {enumerable: true, get: -> @_responder.res})
+  Object.defineProperty(controller::, 'cookies', {enumerable: true, get: -> @_responder.req.cookies})
+  Object.defineProperty(controller::, 'session', {enumerable: true, get: -> @_responder.req.session})
+  Object.defineProperty(controller::, 'body', {enumerable: true, get: -> @_responder.req.body})
+  Object.defineProperty(controller::, 'params', {enumerable: true, get: -> @_responder.req.params})
+  Object.defineProperty(controller::, 'query', {enumerable: true, get: -> @_responder.req.query})
+  Object.defineProperty(controller::, 'headers', {enumerable: true, get: -> @_responder.req.headers})
 
   controller
 

@@ -1,5 +1,6 @@
 bcrypt = require 'bcrypt'
 crypto = require 'crypto'
+caboose = require 'caboose'
 
 generate_token = exports.generate_token = (length) ->
   crypto.randomBytes(Math.ceil(length / 2)).toString('hex').substr(0, length)
@@ -57,11 +58,38 @@ initialize_model = (Model) ->
 
             callback null, user
 
+unauthorized = (controller, realm) ->
+  controller._responder.res.writeHead 401, 'Content-Type': 'text/plain', 'WWW-Authenticate': "Basic realm=#{realm}"
+  controller._responder.res.end 'Authorization Required'
+
+basic_auth_filter = (options) ->
+  realm = options.realm ? 'Basic'
+  (next) ->
+    return unauthorized(this, realm) unless @headers.authorization?
+    
+    matches = /^basic ([A-Za-z0-9=]+)$/i.exec @headers.authorization
+    return unauthorized(this, realm) unless matches?
+    
+    creds = new Buffer(matches[1], 'base64').toString('utf8').split ':'
+    return unauthorized(this, realm) unless creds.length is 2 and creds[0] is options.name and creds[1] is options.password
+    
+    next()
+
+initialize_controller = ->
+  caboose.controller.Builder.add_plugin
+    name: 'http_basic_authenticate_with'
+    execute: (options) ->
+      throw new Error('http_basic_authenticate_with requires name and password options') unless options?.name? and options?.password?
+      @_http_basic_authenticate_with = options
+    build: (controller) ->
+      @before_filter basic_auth_filter(@_http_basic_authenticate_with) if @_http_basic_authenticate_with?
+
 exports['caboose-plugin'] = {
   install: (util, logger) ->
     util.add_plugin_to_package 'caboose-authentication', util.read_package(__dirname).version
   
   initialize: ->
+    initialize_controller()
     try
       initialize_model require('caboose-model')
     catch e

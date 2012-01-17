@@ -8,10 +8,10 @@ logger = module.exports =
   error: (message) ->
     console.log message.red
   file_exists: (file_path) ->
-    console.log "#{logger.indent}exists ".grey + file_path
+    console.log "#{logger.indent}exists  ".grey + file_path
   file_create: (file_path) ->
-    console.log "#{logger.indent}create ".green + file_path
+    console.log "#{logger.indent}create  ".green + file_path
   file_mkdir: (file_path) ->
-    console.log "#{logger.indent}mkdir ".blue + file_path
+    console.log "#{logger.indent}mkdir   ".blue + file_path
   file_alter: (file_path) ->
-    console.log "#{logger.indent}alter ".grey + file_path
+    console.log "#{logger.indent}alter   ".grey + file_path

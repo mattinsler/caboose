@@ -50,15 +50,15 @@ if not global.Caboose?
   Caboose.cli = require './lib/cli'
   
   Caboose.controller = {
-    create: (name, extends_name = 'Controller') -> new exports.internal.controller.builder(name, extends_name)
+    create: (name, extends_name = 'Controller') -> new exports.controller.Builder(name, extends_name)
   }
 
 exports.registry = global.Caboose.registry
 exports.path = Path
 
-exports.internal = {
-  compiler: require './lib/compiler'
-  controller: {
-    builder: require './lib/controller/builder'
-  }
+exports.Compiler = require './lib/compiler'
+exports.controller = {
+  Builder: require './lib/controller/builder'
+  Controller: require './lib/controller/controller'
+  Compiler: require './lib/controller/controller_compiler'
 }
