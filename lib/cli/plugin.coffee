@@ -46,6 +46,10 @@ commands = {
         logger.error "An error occured while running npm install #{plugin_name}"
         return logger.error(err.stack)
       commands.install(plugin_name) # Try again
+  
+  uninstall: (plugin_name) ->
+    util.remove_plugin_from_package plugin_name
+    logger.title "Uninstalled #{plugin_name}..."
 }
 
 exports.method = (command, plugin_name, args...) ->

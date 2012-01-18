@@ -86,7 +86,6 @@ initialize_controller = ->
 
 exports['caboose-plugin'] = {
   install: (util, logger) ->
-    util.add_plugin_to_package 'caboose-authentication', util.read_package(__dirname).version
   
   initialize: ->
     initialize_controller()

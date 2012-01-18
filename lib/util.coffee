@@ -71,3 +71,10 @@ util = module.exports =
       package.dependencies[plugin_name] = version
       package['caboose-plugins'] = [] unless package['caboose-plugins']?
       package['caboose-plugins'].push(plugin_name) unless _(package['caboose-plugins']).find((p) -> p is plugin_name)?
+  
+  remove_plugin_from_package: (plugin_name) ->
+    util.alter_package (package) ->
+      package.dependencies = {} unless package.dependencies?
+      delete package.dependencies[plugin_name]
+      package['caboose-plugins'] = [] unless package['caboose-plugins']?
+      package['caboose-plugins'] = _(package['caboose-plugins']).reject (p) -> p is plugin_name
