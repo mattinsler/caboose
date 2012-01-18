@@ -33,23 +33,32 @@ class Model
   @first: (callback) ->
     new Query(this).first callback
   
+  @array: (callback) ->
+    new Query(this).array callback
+  
+  @each: (callback) ->
+    new Query(this).each callback
+  
   @count: (callback) ->
     new Query(this).count callback
-  
-  @all: ->
-    new Query(this)
-  
-  @where: (query) ->
-    new Query(this, query)
-  
-  @sort: (fields) ->
-    new Query(this).sort(fields)
-  
+    
+  @distinct: (key, callback) ->
+    new Query(this).distinct key, callback
+
   @skip: (count) ->
     new Query(this).skip(count)
   
   @limit: (count) ->
     new Query(this).limit(count)
+
+  @sort: (fields) ->
+    new Query(this).sort(fields)
+  
+  @fields: (fields) ->
+    new Query(this).fields(fields)
+
+  @where: (query) ->
+    new Query(this, query)
 
   @save: (doc, callback) ->
     @_ensure_collection (c) =>
@@ -81,9 +90,6 @@ class Model
     @_ensure_collection (c) ->
       return c.remove(query, {safe: true}, callback) if callback?
       c.remove query
-  
-  @distinct: (key, callback) ->
-    new Query(this).distinct key, callback
   
   @find_and_modify: (options, callback) ->
     opts = {}
