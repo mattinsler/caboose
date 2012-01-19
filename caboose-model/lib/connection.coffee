@@ -14,13 +14,10 @@ module.exports = class Connection
       [options.user, options.password] = uri.auth.split ':'
     options
   
-  open: (conn_string, callback) ->
+  open: (options, callback) ->
     return callback null, @db if @db?
     
-    if typeof conn_string is 'string'
-      options = @_parse_options conn_string
-    else
-      options = conn_string
+    options = @_parse_options(options.url) if options.url?
     
     if not @db
       try
