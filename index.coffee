@@ -52,6 +52,7 @@ if not global.Caboose?
   Caboose.controller = {
     create: (name, extends_name = 'Controller') -> new exports.controller.Builder(name, extends_name)
   }
+  Caboose.generators = require './lib/generators'
 
 exports.registry = global.Caboose.registry
 exports.path = Path
@@ -62,3 +63,5 @@ exports.controller = {
   Controller: require './lib/controller/controller'
   Compiler: require './lib/controller/controller_compiler'
 }
+
+require './lib/controller/generator'

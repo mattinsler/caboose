@@ -43,8 +43,7 @@ class ControllerCompiler extends Compiler
     # @apply_precompile_plugins 'models'
 
   postcompile: ->
-    methods = Object.keys(@scope[@name]::).filter (k) -> k isnt 'constructor'
-    for method in methods
+    for method in Object.keys(@scope[@name]::)
       @builder.action method, @scope[@name]::[method]
     # @apply_postcompile_plugins 'models'
   
