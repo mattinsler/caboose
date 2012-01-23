@@ -13,7 +13,7 @@ build = ->
     Object.defineProperty model, prop, {value: Model[prop], enumerable: false}
   # private properties
   Object.defineProperty model, '_type', {value: model, enumerable: false}
-  for prop in ['name']
+  for prop in ['name', 'short_name']
     Object.defineProperty model, "_#{prop}", {value: this[prop], enumerable: false}
   
   plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
@@ -29,6 +29,7 @@ class Builder
   
   constructor: (name) ->
     Object.defineProperty @, 'name', {value: name, enumerable: false}
+    Object.defineProperty @, 'short_name', {value: Caboose.registry.split(@name).join('_'), enumerable: false}
     
     plugin.initialize?.apply(this) for plugin in Builder.plugins
     
@@ -44,8 +45,7 @@ class Builder
 Builder.plugins = [{
   name: 'static'
   initialize: -> Object.defineProperty @, '_statics', {value: {}, enumerable: false}
-  execute: (name, method) ->
-    @_statics[name] = method
+  execute: (name, method) -> @_statics[name] = method
   build: (model) ->
     for k, v of @_statics
       model[k] = v
@@ -56,6 +56,19 @@ Builder.plugins = [{
   build: (model) ->
     for k, v of @_instances
       model::[k] = v
+}, {
+  name: 'property'
+  initialize: -> Object.defineProperty @, '_properties', {value: {}, enumerable: false}
+  execute: (name, method) -> @_properties[name] = method
+  build: (model) ->
+    return if Object.keys(@_properties).length is 0
+    
+    init = model::__init__
+    _properties = @_properties
+    model::__init__ = ->
+      init.apply(this, arguments)
+      for k, v of _properties
+        Object.defineProperty @, k, {get: v, enumerable: true}
 }, {
   name: 'before_save',
   initialize: -> Object.defineProperty @, '_before_saves', {value: [], enumerable: false}
