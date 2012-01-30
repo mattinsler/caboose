@@ -1,7 +1,9 @@
+Promise = require './promise'
+
 module.exports = class Query
   constructor: (@model, @query) ->
     @query ?= {}
-    @query._id = new Query.ObjectID(@query._id) if @query._id? and typeof @query._id is 'string'
+    @query._id = new Query.ObjectID(@query._id) if @query._id? and typeof @query._id is 'string' and /[0-9a-z]{24}/i.test(@query._id)
     @options = {}
 
   skip: (count) ->
@@ -21,19 +23,27 @@ module.exports = class Query
     this
 
   first: (callback) ->
+    promise = new Promise(callback)
+
     @model._ensure_collection (c) =>
       @options.limit = 1
       c.find(@query, @options).nextObject (err, item) =>
-        return callback(err) if err?
-        callback null, (if item? then new @model(item) else null)
+        return promise.error(err) if err?
+        promise.complete(if item? then new @model(item) else null)
+
+    promise
 
   array: (callback) ->
+    promise = new Promise(callback)
+    
     @model._ensure_collection (c) =>
       c.find(@query, @options).toArray (err, items) =>
-        return callback(err) if err?
+        return promise.error(err) if err?
         if items?
           items[x] = new @model(items[x]) for x in [0...items.length]
-        callback null, items
+        promise.complete(items)
+    
+    promise
 
   each: (callback) ->
     @model._ensure_collection (c) =>
@@ -42,9 +52,17 @@ module.exports = class Query
         callback null, (if item? then new @model(item) else null)
   
   count: (callback) ->
+    promise = new Promise(callback)
+    
     @model._ensure_collection (c) =>
-      c.count @query, callback
+      c.count @query, promise.callback.bind(promise)
+    
+    promise
 
   distinct: (key, callback) ->
+    promise = new Promise(callback)
+    
     @model._ensure_collection (c) =>
-      c.distinct key, @query, callback
+      c.distinct key, @query, promise.callback.bind(promise)
+    
+    promise

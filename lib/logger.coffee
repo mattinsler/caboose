@@ -2,9 +2,10 @@ logger = module.exports =
   indent: '          '
   
   title: (message) -> console.log "[CABOOSE] #{message}"
-  message: (message) ->
-    return console.log logger.indent + message.join("\n#{logger.indent}") if Array.isArray(message)
-    console.log "#{logger.indent}#{message}"
+  message: (message, indent_length = -1) ->
+    ind = if indent_length < 0 then logger.indent else Array(indent_length).join(' ')
+    return console.log ind + message.join("\n#{ind}") if Array.isArray(message)
+    console.log "#{ind}#{message}"
   error: (message) ->
     console.log message.red
   file_exists: (file_path) ->

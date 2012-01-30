@@ -2,6 +2,20 @@ _ = require 'underscore'
 Path = require './path'
 logger = Caboose.logger
 
+_npm_install = (package, callback) ->
+  npm = require('npm')
+  tmp_file = Caboose.root.join(new Buffer(16).toString('hex') + '.tmp')
+  stream = tmp_file.create_write_stream()
+  logger.message "Trying to npm install #{package}".green, 0
+  npm.load {prefix: Caboose.root.path, logfd: stream, outfd: stream, loglevel: 'silent'}, (err) ->
+    return callback(err) if err?
+    npm.commands.install [package], (err, a, result, str) ->
+      stream.destroy()
+      tmp_file.unlink_sync()
+      return callback(err) if err?
+      logger.message "Successfully installed #{package}!".green, 0
+      callback()
+
 util = module.exports =
   mkdir: (file_path, mode = 0755) ->
     if file_path.exists_sync()
@@ -66,15 +80,44 @@ util = module.exports =
     util.write_package(package, root)
   
   add_plugin_to_package: (plugin_name, version) ->
+    util.add_dependency_to_package plugin_name, version
     util.alter_package (package) ->
-      package.dependencies = {} unless package.dependencies?
-      package.dependencies[plugin_name] = version
       package['caboose-plugins'] = [] unless package['caboose-plugins']?
       package['caboose-plugins'].push(plugin_name) unless _(package['caboose-plugins']).find((p) -> p is plugin_name)?
   
   remove_plugin_from_package: (plugin_name) ->
+    util.remove_dependency_from_package plugin_name
     util.alter_package (package) ->
       package.dependencies = {} unless package.dependencies?
       delete package.dependencies[plugin_name]
       package['caboose-plugins'] = [] unless package['caboose-plugins']?
       package['caboose-plugins'] = _(package['caboose-plugins']).reject (p) -> p is plugin_name
+
+  add_dependency_to_package: (plugin_name, version) ->
+    util.alter_package (package) ->
+      package.dependencies = {} unless package.dependencies?
+      package.dependencies[plugin_name] = version
+  
+  remove_dependency_from_package: (plugin_name) ->
+    util.alter_package (package) ->
+      package.dependencies = {} unless package.dependencies?
+      delete package.dependencies[plugin_name]
+  
+  npm_install: (package, callback) ->
+    logger.title "Installing #{package}"
+    done = (err) ->
+      if err?
+        logger.error "An error occured while running npm install #{package}"
+        return callback and callback(err)
+      util.add_dependency_to_package(package, util.read_package(Caboose.root.join('node_modules', package)).version)
+      logger.title "Installed #{package}"
+      callback and callback(null, true)
+    
+    if Caboose.root.join('node_modules', package).exists_sync()
+      try
+        require(package)
+        return done()
+      catch e
+    
+    logger.error "#{package} is not installed.  Installing with npm..."
+    _npm_install package, done

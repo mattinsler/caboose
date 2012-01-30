@@ -25,6 +25,13 @@ resolve_layout = (controller, format) ->
 compile_helpers = (controller) ->
   _.extend.bind(null, {}).apply(null, controller._helpers)
 
+render_view = (engine, view_path, local_data, callback) ->
+  try
+    consolidate[engine] view_path, local_data, callback
+  catch err
+    console.error "The #{engine} view engine is not installed. To fix this, run 'npm install #{engine}'" if err.message is "Cannot find module '#{engine}'"
+    callback(err)
+
 render = (controller, data, options, callback) ->
   counter = 0
   render_count = 1
@@ -57,12 +64,12 @@ render = (controller, data, options, callback) ->
       partial_data.forEach (item, idx) ->
         partial_array_locals = _.extend({}, partial_locals)
         partial_array_locals[partial_var] = item
-        consolidate[partial_view.extension] partial_view.path, partial_array_locals, (err, partial_text) ->
+        render_view partial_view.extension, partial_view.path, partial_array_locals, (err, partial_text) ->
           return done(err) if err?
           array_data[idx] = partial_text
           array_done()
     else
-      consolidate[partial_view.extension] partial_view.path, partial_locals, (err, partial_text) ->
+      render_view partial_view.extension, partial_view.path, partial_locals, (err, partial_text) ->
         done(err, partial_text, partial_key)
     
     partial_key
@@ -72,14 +79,14 @@ render = (controller, data, options, callback) ->
 
   view = resolve_view(controller._short_name, controller._view, controller.params.format)
   return callback(new Error("No view found for #{controller._short_name} #{controller._view} #{controller.params.format}")) unless view?
-  consolidate[view.extension] view.path, locals, (err, text) ->
+  render_view view.extension, view.path, locals, (err, text) ->
     return done(err, text) if err? or (options?.layout? and !options.layout)
     
     layout = resolve_layout(options?.layout || controller, controller.params.format)
     return done(err, text) unless layout?
     
     locals.yield = -> text
-    consolidate[layout.extension] layout.path, locals, done
+    render_view layout.extension, layout.path, locals, done
 
 class Responder
   constructor: (@req, @res, @next) ->

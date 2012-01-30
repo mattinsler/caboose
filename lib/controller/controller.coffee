@@ -1,4 +1,4 @@
-Responder = require '../server/responder'
+Responder = require './responder'
 
 class Controller
   constructor: (req, res, next) ->

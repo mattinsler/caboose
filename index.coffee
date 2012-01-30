@@ -1,3 +1,5 @@
+return module.exports = global['caboose'] if global['caboose']?
+
 Path = require './lib/path'
 
 caboose_path = new Path(process.argv[1])
@@ -38,7 +40,6 @@ if not global.Caboose?
     tmp: Caboose.root.join('tmp')
   }
   Caboose.path.controllers = Caboose.path.app.join('controllers')
-  Caboose.path.models = Caboose.path.app.join('models')
   Caboose.path.helpers = Caboose.path.app.join('helpers')
   Caboose.path.views = Caboose.path.app.join('views')
   
@@ -62,6 +63,7 @@ exports.controller = {
   Builder: require './lib/controller/builder'
   Controller: require './lib/controller/controller'
   Compiler: require './lib/controller/controller_compiler'
+  Responder: require './lib/controller/responder'
 }
 
 require './lib/controller/generator'

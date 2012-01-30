@@ -18,6 +18,8 @@ module.exports = global['caboose-model'] = caboose_model =
 
     initialize: ->
       if Caboose?
+        Caboose.path.models = Caboose.path.app.join('models')
+
         require './lib/cli'
         
         Caboose.registry.register 'model', {
@@ -44,3 +46,4 @@ caboose_model.Compiler = require './lib/model_compiler'
 caboose_model.Connection = require './lib/connection'
 caboose_model.Model = require './lib/model'
 caboose_model.Query = require './lib/query'
+caboose_model.Promise = require './lib/promise'

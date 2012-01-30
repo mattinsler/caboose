@@ -40,7 +40,7 @@ commands = {
         console.error e.stack
         return logger.error("Error while trying to install plugin #{plugin_name}: #{e.message}") unless e.message is "Cannot find module '#{plugin_name}'"
     
-    logger.error "#{plugin_name} is not installed.  Installing from npm..."
+    logger.error "#{plugin_name} is not installed.  Installing with npm..."
     npm_install plugin_name, (err) ->
       if err?
         logger.error "An error occured while running npm install #{plugin_name}"
