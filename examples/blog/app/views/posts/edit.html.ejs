@@ -1,22 +1,17 @@
-<% if (post.title) { %>
-  <h1>Editing <%= post.title %></h1>
-<% } else { %>
-  <h1>New Post</h1>
-<% } %>
+<h1>Editing post <%= post._id %></h2>
 
-<form id="post" action="/posts<%= post.title ? '/' + post._id : '' %>" method="POST">
-  <% if (post.title) { %>
-    <input type="hidden" name="_method" value="put" />
-  <% } %>
+<%- f = form_for(post, {action: 'update', path: '/posts/' + post._id}) %>
   <p>
-    <label for="post[title]">Title:</label>
-    <input type="text" name="post[title]" value="<%= post.title || '' %>" />
+    <%- f.label('title') %>
+    <%- f.text('title') %>
   </p>
   <p>
-    <label for="post[body]">Body:</label>
-    <textarea name="post[body]"><%= post.body || '' %></textarea>
+    <%- f.label('content') %>
+    <%- f.textarea('content') %>
   </p>
-  <p>
-    <input type="submit" value="<%= post.title ? 'Update' : 'Create' %>" />
-  </p>
-</form>
+  <%- f.submit('Update') %>
+<%- f.end() %>
+
+<%- f = form_for(post, {action: 'destroy', path: '/posts/' + post._id}) %>
+  <%- f.submit('Delete') %>
+<%- f.end() %>

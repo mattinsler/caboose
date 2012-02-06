@@ -1,0 +1,13 @@
+<h1>My Blog</h1>
+
+<h2>
+  <% if (count === 0) { %>
+    There are no posts.  Why don&apos;t you <%- link_to('create one', '/posts/new') %>.
+  <% } else { %>
+    You have <%= count %> post(s).  You can always <%- link_to('add more', '/posts/new') %>.
+  <% } %>
+</h2>
+
+<div id="posts">
+  <%- partial('post', posts) %>
+</div>

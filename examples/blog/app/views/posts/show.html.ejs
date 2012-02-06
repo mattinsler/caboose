@@ -1,0 +1,5 @@
+<%- link_to('<< Back to posts', '/posts') %>
+
+<h3><%= post.title %></h3>
+<p><%= post.content %></p>
+<p class="meta">Posted at <time><%= post.created_at.format('MMM D, YYYY') %></time> - <%- link_to('Edit', request.path.join('edit')) %></p>

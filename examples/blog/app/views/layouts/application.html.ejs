@@ -1,13 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <title>Blog</title>
-    <link rel="stylesheet" href="/style.css" />
+    <title>My Awesome App</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/app.css" />
   </head>
-  
+
   <body>
-    <div id="container">
-      <%- yield() %>
-    </div>
+    <% Object.keys(flash).forEach(function(key) { %>
+      <div class="flash <%= key %>">
+        <p><%= flash[key] %></p>
+      </div>
+    <% }) %>
+    
+    <%- yield() %>
   </body>
 </html>

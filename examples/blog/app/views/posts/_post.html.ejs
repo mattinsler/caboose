@@ -1,13 +1,8 @@
-<div class="post">
-  <h2>
-    <%= post.title %>
-    <a class="edit" href="/posts/<%= post._id %>/edit">Edit</a>
-  </h2>
-
-  <p class="date created">Created at <%= post.created_at %><p>
-  <% if (post.updated_at) { %>
-    <p class="date updated">Updated at <%= post.updated_at %></p>
+<h3><%- link_to(post.title, '/posts/' + post._id) %></h3>
+<p><%= post.content %></p>
+<p class="meta">
+  <% if (post.user_id) { %>
+    <%- link_to(post.user_id, '/users/' + post.user_id + '/posts') %> -
   <% } %>
-
-  <pre class="body"><%= post.body %></pre>
-</div>
+  Posted at <time><%= post.created_at.format('MMM D, YYYY') %></time>
+</p>

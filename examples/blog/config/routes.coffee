@@ -1,4 +1,5 @@
 module.exports = ->
-  @route '/', 'root'
-
+  @route '/', 'posts#index'
   @resources 'posts'
+  @resources 'users', ->
+    @resources 'posts'

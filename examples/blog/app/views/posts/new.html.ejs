@@ -1,0 +1,13 @@
+<h1>Create a new post</h2>
+
+<%- f = form_for(post, {action: 'create', path: '/posts'}) %>
+  <p>
+    <%- f.label('title') %>
+    <%- f.text('title') %>
+  </p>
+  <p>
+    <%- f.label('content') %>
+    <%- f.textarea('content') %>
+  </p>
+  <%- f.submit() %>
+<%- f.end() %>
