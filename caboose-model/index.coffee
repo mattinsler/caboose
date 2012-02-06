@@ -1,11 +1,21 @@
 return module.exports = global['caboose-model'] if global['caboose-model']?
 
+logger = Caboose.logger
+
 module.exports = global['caboose-model'] = caboose_model =
   connection: null
 
   create: (name) -> new caboose_model.Builder(name)
   configure: (config) ->
     @config = config
+    # Test the connection
+    caboose_model.Collection.create 'test', (err) ->
+      if err?
+        if err.code is 'ECONNREFUSED'
+          logger.error 'Could not connect to MongoDB database'
+        else
+          logger.error err.stack
+        process.exit(1)
     @
   
   'caboose-plugin': {
@@ -19,6 +29,13 @@ module.exports = global['caboose-model'] = caboose_model =
     initialize: ->
       if Caboose?
         Caboose.path.models = Caboose.path.app.join('models')
+        
+        # load models
+        Caboose.app.after 'initialize', (app) ->
+          app.models = []
+          if Caboose.path.models.exists_sync()
+            for file in Caboose.path.models.readdir_sync()
+              app.models.push(Caboose.registry.get(file.basename)) if file.extension in ['js', 'coffee']
 
         require './lib/cli'
         
@@ -44,6 +61,7 @@ module.exports = global['caboose-model'] = caboose_model =
 caboose_model.Builder = require './lib/builder'
 caboose_model.Compiler = require './lib/model_compiler'
 caboose_model.Connection = require './lib/connection'
+caboose_model.Collection = require './lib/collection'
 caboose_model.Model = require './lib/model'
 caboose_model.Query = require './lib/query'
 caboose_model.Promise = require './lib/promise'

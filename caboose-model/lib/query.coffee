@@ -1,3 +1,4 @@
+_ = require 'underscore'
 Promise = require './promise'
 
 module.exports = class Query
@@ -5,22 +6,26 @@ module.exports = class Query
     @query ?= {}
     @query._id = new Query.ObjectID(@query._id) if @query._id? and typeof @query._id is 'string' and /[0-9a-z]{24}/i.test(@query._id)
     @options = {}
+  
+  where: (query) ->
+    _.extend(@query, query)
+    @
 
   skip: (count) ->
     @options.skip = count
-    this
+    @
 
   limit: (count) ->
     @options.limit = count
-    this
+    @
 
   sort: (fields) ->
     @options.sort = fields
-    this
+    @
   
   fields: (fields) ->
     @options.fields = fields
-    this
+    @
 
   first: (callback) ->
     promise = new Promise(callback)

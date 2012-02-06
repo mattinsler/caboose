@@ -19,9 +19,11 @@
     "switchback": "latest",
     "mailer": "latest",
     "underscore": "latest",
+    "underscore.string": "latest",
     "consolidate": "latest",
     "npm": "latest",
-    "kexec": "latest"
+    "kexec": "latest",
+    "yaml": "latest"
   },
   "devDependencies": {
     "vows": "latest"

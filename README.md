@@ -70,8 +70,7 @@ In all other cases all code can be written in javascript rather than coffeescrip
 - Execute all initializers in config/initializers in alphanumeric order
 - Create http server using [express](http://expressjs.com/)
 - Execute config/middleware.coffee
-- Tell the http server to start listening on the configured port
-- Execute all post_boot hooks configured during initialization
+- Tell the http server to start listening on the configured portions
 
 ## Configuration
 

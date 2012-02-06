@@ -1,6 +1,7 @@
 _ = require 'underscore'
 URL = require 'url'
 Route = require './route'
+Path = require '../path'
 
 conditions = {
   domain: (req, condition) ->
@@ -88,16 +89,6 @@ class ParamNode extends Node
 class Configurator
   constructor: (@root, @options) ->
 
-  domain: (domain, routing_method) ->
-    throw new Error('Cannot have more than one domain condition in a route') if @options?.conditions?.domain?
-    options = _.extend(@options || {}, {conditions: {domain: domain}})
-    routing_method.call(new Configurator(@root, options))
-
-  subdomain: (subdomain, routing_method) ->
-    throw new Error('Cannot have more than one subdomain condition in a route') if @options?.conditions?.subdomain?
-    options = _.extend(@options || {}, {conditions: {subdomain: subdomain}})
-    routing_method.call(new Configurator(@root, options))
-
   route: (path, opts) ->
     if typeof opts is 'string'
       options = arguments[2] || {}
@@ -112,7 +103,7 @@ class Configurator
     _.extend(options, @options) if @options?
 
     node = @root
-    path_segments = path.split('/').filter((s) -> s isnt '')
+    path_segments = ((@options?.base_path || '') + '/' + path).split('/').filter((s) -> s isnt '')
 
     for segment in path_segments
       if segment[0] is ':'
@@ -131,7 +122,7 @@ class Configurator
     node.methods[options.method] = [] unless node.methods[options.method]?
     node.methods[options.method].push {route: new Route(options), conditions: conditions}
   
-  resources: (path) ->
+  resources: (path, routing_method) ->
     @route path, "#{path}#index"
     @route "#{path}/new", "#{path}#new"
     @route "post #{path}", "#{path}#create"
@@ -139,19 +130,17 @@ class Configurator
     @route "#{path}/:id/edit", "#{path}#edit"
     @route "put #{path}/:id", "#{path}#update"
     @route "delete #{path}/:id", "#{path}#destroy"
-  
-  # resources: (path, options) ->
-    # controller = if options?.controller? then options.controller else path
-    # @match (if options?.index?   then options.index   else path),               method: 'get',     action: 'index',   controller: controller
-    # @match (if options?['new']?  then options['new']  else "#{path}/new"),      method: 'get',     action: 'new',     controller: controller
-    # @match (if options?.create?  then options.create  else path),               method: 'post',    action: 'create',  controller: controller
-    # @match (if options?.show?    then options.show    else "#{path}/:id"),      method: 'get',     action: 'show',    controller: controller
-    # @match (if options?.edit?    then options.edit    else "#{path}/:id/edit"), method: 'get',     action: 'edit',    controller: controller
-    # @match (if options?.update?  then options.update  else "#{path}/:id"),      method: 'put',     action: 'update',  controller: controller
-    # @match (if options?.destroy? then options.destroy else "#{path}/:id"),      method: 'delete',  action: 'destroy', controller: controller
-    # if options? and typeof options is 'function'
-    #   @_childRoutes path, routes
+    routing_method.call(new Configurator(@root, _.extend({}, @options, {base_path: (@options?.base_path || '') + "#{path}/:#{path}_id"}))) if routing_method?
     
+  domain: (domain, routing_method) ->
+    throw new Error('Cannot have more than one domain condition in a route') if @options?.conditions?.domain?
+    options = _.extend(@options || {}, {conditions: {domain: domain}})
+    routing_method.call(new Configurator(@root, options))
+
+  subdomain: (subdomain, routing_method) ->
+    throw new Error('Cannot have more than one subdomain condition in a route') if @options?.conditions?.subdomain?
+    options = _.extend(@options || {}, {conditions: {subdomain: subdomain}})
+    routing_method.call(new Configurator(@root, options))
 
 module.exports = class Router
   @conditions: conditions
@@ -165,6 +154,7 @@ module.exports = class Router
   route: (req, res, next) ->
     try
       req.parsed = URL.parse("http://#{req.headers.host}#{req.url}", true)
+      Object.defineProperty req, 'path', {value: new Path(req.path)}
       domains = req.parsed.hostname.split('.')
       x = if domains.slice(-1)[0] is 'localhost' then -1 else -2
       req.parsed.domain = domains.slice(x).join('.')

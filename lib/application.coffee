@@ -6,11 +6,20 @@ Router = require './server/router'
 module.exports = class Application
   constructor: (@name) ->
     @_state = {}
-    @_post_boot = []
+    @_after = {}
+    @_before = {}
     @registry = require './registry'
+  
+  _apply_after: (method_name) ->
+    method(this) for method in @_after[method_name] if @_after[method_name]
+  _apply_before: (method_name) ->
+    method(this) for method in @_before[method_name] if @_before[method_name]
 
-  post_boot: (method) ->
-    @_post_boot.push method
+  after: (method_name, callback) ->
+    (@_after[method_name] ?= []).push callback
+
+  before: (method_name, callback) ->
+    (@_before[method_name] ?= []).push callback
   
   read_config_files: (config) ->
     files = Caboose.path.config.readdir_sync()
@@ -18,8 +27,9 @@ module.exports = class Application
     files = files.concat(env_dir.readdir_sync()) if env_dir.exists_sync() and env_dir.is_directory_sync()
 
     for file in files
-      if file.extension is 'json'
-        config[file.basename] = JSON.parse(file.read_file_sync('utf8'))
+      switch file.extension
+        when 'json' then config[file.basename] = JSON.parse(file.read_file_sync('utf8'))
+        when 'yml', 'yaml' then config[file.basename] = require('yaml').eval(file.read_file_sync('utf8'))
 
   configure: (callback) ->
     @config = {}
@@ -72,6 +82,8 @@ module.exports = class Application
     return callback() if @_state.initialized
     return @_state.callbacks.push(callback) if @_state.initializing
     
+    @_apply_before 'initialize'
+    
     @_state.initializing = true
     @_state.callbacks = [callback]
     
@@ -86,14 +98,18 @@ module.exports = class Application
         if err?
           console.error err.stack
           process.exit 1
-        c(this) for c in @_state.callbacks
+        
+        @_apply_after 'initialize'
         @_state.initialized = true
         delete @_state.initializing
+        
+        c(this) for c in @_state.callbacks
         delete @_state.callbacks
-  
+
   # boot the web engine
   boot: (callback) ->
     return callback() if not @config.http.enabled
+    @_apply_before 'boot'
     @http = express.createServer()
 
     middleware = Caboose.path.config.join('middleware').require()
@@ -101,17 +117,9 @@ module.exports = class Application
     
     @http.listen @config.http.port
 
-    for method in @_post_boot
-      method this
+    @_apply_after 'boot'
 
     callback()
 
-  load_models: ->
-    models = []
-    if Caboose.path.models.exists_sync()
-      for file in Caboose.path.models.readdir_sync()
-        models.push(Caboose.registry.get(file.basename)) if file.extension in ['js', 'coffee']
-    models
-  
   address: ->
     @http.address()
