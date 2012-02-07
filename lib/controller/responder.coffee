@@ -130,5 +130,8 @@ class Responder
   redirect_to: (url, options) ->
     @set_headers options
     @res.redirect url
+  
+  respond: () ->
+    
 
 module.exports = Responder

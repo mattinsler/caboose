@@ -1,8 +1,18 @@
 Controller = require './controller'
 
 build = ->
-  controller = class extends Controller
-  # Object.defineProperty controller, '__super__', {enumerable: false}
+  __constructor__ = @_actions.constructor
+  rx = new RegExp("^\\s*function\\s+#{@name}\\s*\\(\\)\\s*{\\s*#{@name}\\.__super__\\.constructor\\.apply\\(this,\\s*arguments\\);\\s*}\\s*$")
+  
+  base_controller = (if @extends? then Caboose.registry.get(@extends) else null) || Controller
+  
+  # Default constructor
+  if rx.test(__constructor__.toString().replace(/[ \t\r\n]+/g,' '))
+    controller = class extends base_controller
+  else
+    controller = class extends base_controller
+      constructor: __constructor__
+      
   # private properties
   controller["_#{prop}"] = @[prop] for prop in ['name', 'short_name', 'extends']
   
@@ -13,12 +23,12 @@ build = ->
   controller::_extends = @extends
   Object.defineProperty(controller::, 'request', {enumerable: true, get: -> @_responder.req})
   Object.defineProperty(controller::, 'response', {enumerable: true, get: -> @_responder.res})
-  Object.defineProperty(controller::, 'cookies', {enumerable: true, get: -> @_responder.req.cookies})
-  Object.defineProperty(controller::, 'session', {enumerable: true, get: -> @_responder.req.session})
-  Object.defineProperty(controller::, 'body', {enumerable: true, get: -> @_responder.req.body})
-  Object.defineProperty(controller::, 'params', {enumerable: true, get: -> @_responder.req.params})
-  Object.defineProperty(controller::, 'query', {enumerable: true, get: -> @_responder.req.query})
-  Object.defineProperty(controller::, 'headers', {enumerable: true, get: -> @_responder.req.headers})
+  Object.defineProperty(controller::, 'cookies', {enumerable: true, get: -> if @_responder.req.cookies? then @_responder.req.cookies else null})
+  Object.defineProperty(controller::, 'session', {enumerable: true, get: -> if @_responder.req.session? then @_responder.req.session else null})
+  Object.defineProperty(controller::, 'body', {enumerable: true, get: -> if @_responder.req.body? then @_responder.req.body else null})
+  Object.defineProperty(controller::, 'params', {enumerable: true, get: -> if @_responder.req.params? then @_responder.req.params else null})
+  Object.defineProperty(controller::, 'query', {enumerable: true, get: -> if @_responder.req.query? then @_responder.req.query else null})
+  Object.defineProperty(controller::, 'headers', {enumerable: true, get: -> if @_responder.req.headers? then @_responder.req.headers else null})
 
   controller
 
@@ -66,7 +76,7 @@ Builder.plugins = [{
   name: 'action'
   initialize: -> Object.defineProperty @, '_actions', {value: {}, enumerable: false}
   execute: (name, method) -> @_actions[name] = method
-  build: (controller) -> controller::[k] = v for k, v of @_actions
+  build: (controller) -> controller::[k] = v for k, v of @_actions when k isnt 'constructor'
 }, {
   name: 'before_filter'
   initialize: -> Object.defineProperty @, '_before_filters', {value: [], enumerable: false}

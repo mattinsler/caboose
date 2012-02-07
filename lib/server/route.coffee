@@ -19,6 +19,6 @@ class Route
     # return res.send(404) if controller_factory.responds_to? and req.params.format not in controller_factory.responds_to
 
     controller = new ControllerType(req, res, next)
-    controller.execute @options.action
+    controller._execute @options.action
 
 module.exports = Route

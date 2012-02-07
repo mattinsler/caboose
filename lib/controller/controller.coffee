@@ -6,7 +6,7 @@ class Controller
     @flash = @session.flash ? {}
     delete @session.flash
 
-  execute: (action) ->
+  _execute: (action) ->
     throw new Error "Could not find #{action} in #{@_name}" if not this[action]?
     @_action = action
     
@@ -46,6 +46,8 @@ class Controller
     if options?
       @session.flash = options
     @_responder.redirect_to url
+  respond: () ->
+    @responder.respond
     
   # options: httpOnly, secure, expires, maxAge
   set_cookie: (name, value, options) ->

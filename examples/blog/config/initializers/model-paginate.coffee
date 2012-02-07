@@ -3,6 +3,7 @@ Model = caboose_model.Model
 Query = caboose_model.Query
 
 Query::paginate = (opts, callback) ->
+  console.log opts
   opts.page_size ?= 10
   opts.page ?= 1
   @skip(opts.page_size * (opts.page - 1)).limit(opts.page_size).array(callback)
