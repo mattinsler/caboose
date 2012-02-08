@@ -82,7 +82,7 @@ initialize_controller = ->
       throw new Error('http_basic_authenticate_with requires name and password options') unless options?.name? and options?.password?
       @_http_basic_authenticate_with = options
     build: (controller) ->
-      @before_filter basic_auth_filter(@_http_basic_authenticate_with) if @_http_basic_authenticate_with?
+      @before_action basic_auth_filter(@_http_basic_authenticate_with) if @_http_basic_authenticate_with?
 
 exports['caboose-plugin'] = {
   install: (util, logger) ->

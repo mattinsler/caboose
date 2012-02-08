@@ -63,7 +63,7 @@ Using models from a controller is dead simple.  Just import the model by name an
     import 'User'
     
     class UsersController extends Controller
-      before_filter 'get_user', {only: ['show', 'edit', 'update']}
+      before_action 'get_user', {only: ['show', 'edit', 'update']}
       
       get_user: (next) ->
         User.where(_id: @params.id).first (err, user) =>

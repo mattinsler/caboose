@@ -13,8 +13,8 @@ class Controller
     x = 0
     next = (err) =>
       return @error err if err?
-      return this[action].call(this) if x is @_before_filters.length
-      filter = @_before_filters[x++]
+      return this[action].call(this) if x is @_before_actions.length
+      filter = @_before_actions[x++]
       return next() if filter.only? and not (action in filter.only)
       if typeof filter.method is 'string'
         return next(new Error("Filter #{filter.method} does not exist")) unless this[filter.method]?

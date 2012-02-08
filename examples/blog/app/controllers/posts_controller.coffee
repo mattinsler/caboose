@@ -6,8 +6,8 @@ import 'ApplicationController'
 class PostsController extends ApplicationController
   helper FormHelper
   
-  before_filter 'posts_filter', {only: ['show', 'edit', 'update', 'destroy']}
-  before_filter 'users_filter', {only: ['index']}
+  before_action 'posts_filter', {only: ['show', 'edit', 'update', 'destroy']}
+  before_action 'users_filter', {only: ['index']}
 
   index: ->
     @count = Post.count()

@@ -78,15 +78,15 @@ Builder.plugins = [{
   execute: (name, method) -> @_actions[name] = method
   build: (controller) -> controller::[k] = v for k, v of @_actions when k isnt 'constructor'
 }, {
-  name: 'before_filter'
-  initialize: -> Object.defineProperty @, '_before_filters', {value: [], enumerable: false}
-  execute: (filter, options) -> @_before_filters.push(create_filter_object(filter, options))
-  build: (controller) -> construct_inherited_list.call(@, controller, '_before_filters')
+  name: 'before_action'
+  initialize: -> Object.defineProperty @, '_before_actions', {value: [], enumerable: false}
+  execute: (filter, options) -> @_before_actions.push(create_filter_object(filter, options))
+  build: (controller) -> construct_inherited_list.call(@, controller, '_before_actions')
 }, {
-  name: 'after_filter'
-  initialize: -> Object.defineProperty @, '_after_filters', {value: [], enumerable: false}
-  execute: (filter, options) -> @_after_filters.push(create_filter_object(filter, options))
-  build: (controller) -> construct_inherited_list.call(@, controller, '_after_filters')
+  name: 'after_action'
+  initialize: -> Object.defineProperty @, '_after_actions', {value: [], enumerable: false}
+  execute: (filter, options) -> @_after_actions.push(create_filter_object(filter, options))
+  build: (controller) -> construct_inherited_list.call(@, controller, '_after_actions')
 }, {
   name: 'around_filter'
   initialize: -> Object.defineProperty @, '_around_filters', {value: [], enumerable: false}
