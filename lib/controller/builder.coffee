@@ -1,3 +1,5 @@
+_ = require 'underscore'
+async = require 'async'
 Controller = require './controller'
 
 build = ->
@@ -12,7 +14,10 @@ build = ->
   else
     controller = class extends base_controller
       constructor: __constructor__
-      
+  
+  controller.after = Controller.after
+  controller.before = Controller.before
+  
   # private properties
   controller["_#{prop}"] = @[prop] for prop in ['name', 'short_name', 'extends']
   
@@ -66,11 +71,32 @@ create_filter_object = (filter, options) ->
   options
 
 construct_inherited_list = (controller, name) ->
+  # c = controller
+  # controller::[name] = @[name]
+  # until c._extends is 'Controller'
+  #   c = Caboose.registry.get(c._extends)
+  #   controller::[name].splice(0, 0, c::[name]...)
+  list = @[name].slice()
   c = controller
-  controller::[name] = @[name]
-  until c._extends is 'Controller'
-    c = Caboose.registry.get(c._extends)
-    controller::[name].unshift.apply(controller::[name], c::[name])
+  while c?
+    list.splice(0, 0, c::[name]...) if c::[name]?
+    c = if c.__super__? then c.__super__.constructor else null
+  list
+
+filters_for = (context, filter_list, action) ->
+  filter_list.filter((filter) ->
+    if filter.only?
+      return action in filter.only
+    else if filter.except?
+      return action not in filter.except
+    true
+  ).map (filter) ->
+    if typeof filter.method is 'string'
+      throw new Error("Filter #{filter.method} does not exist") unless context[filter.method]?
+      return context[filter.method]
+    else if typeof filter.method is 'function'
+      return filter.method
+    throw new Error('Filter is neither a method or name of a method')
 
 Builder.plugins = [{
   name: 'action'
@@ -81,24 +107,35 @@ Builder.plugins = [{
   name: 'before_action'
   initialize: -> Object.defineProperty @, '_before_actions', {value: [], enumerable: false}
   execute: (filter, options) -> @_before_actions.push(create_filter_object(filter, options))
-  build: (controller) -> construct_inherited_list.call(@, controller, '_before_actions')
+  build: (controller) ->
+    controller::_before_actions = @_before_actions
+    controller.before '_execute', (next, action) ->
+      funcs = []
+      c = controller
+      while c?
+        funcs.splice(0, 0, c::_before_actions...) if c::_before_actions?
+        c = if c.__super__? then c.__super__.constructor else null
+
+      try
+        filters = filters_for(@, funcs, action)
+      catch e
+        next(e)
+        
+      async.series(filters.map((i) => (cb) => i.call(@, cb, action)), next)
 }, {
-  name: 'after_action'
-  initialize: -> Object.defineProperty @, '_after_actions', {value: [], enumerable: false}
-  execute: (filter, options) -> @_after_actions.push(create_filter_object(filter, options))
-  build: (controller) -> construct_inherited_list.call(@, controller, '_after_actions')
-}, {
-  name: 'around_filter'
-  initialize: -> Object.defineProperty @, '_around_filters', {value: [], enumerable: false}
-  execute: (filter, options) -> @_around_filters.push(create_filter_object(filter, options))
-  build: (controller) -> construct_inherited_list.call(@, controller, '_around_filters')
-}, {
+#   name: 'after_action'
+#   initialize: -> Object.defineProperty @, '_after_actions', {value: [], enumerable: false}
+#   execute: (filter, options) -> @_after_actions.push(create_filter_object(filter, options))
+#   build: (controller) -> construct_inherited_list.call(@, controller, '_after_actions')
+# }, {
   name: 'helper'
   initialize: -> Object.defineProperty @, '_helpers', {value: [], enumerable: false}
   execute: (helper) -> @_helpers.push(helper)
   build: (controller) ->
-    construct_inherited_list.call(@, controller, '_helpers')
-    controller::_helpers.unshift(require('./helpers/view_helper')) if controller._extends is 'Controller'
+    helpers = @_helpers
+    helpers.push(controller.__super__._helpers) if controller.__super__?._helpers?
+    helpers.push(require('../view/helpers/view_helper')) if controller._extends is 'Controller'
+    controller::_helpers = _.extend.bind(null, {}).apply(null, helpers)
 }]
 
 module.exports = Builder

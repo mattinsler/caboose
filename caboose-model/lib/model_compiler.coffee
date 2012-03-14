@@ -34,12 +34,16 @@ Builder = require './builder'
 
 class ModelCompiler extends Compiler
   precompile: ->
-    matches = /class\W+([^\W]+)\W+extends\W+([^\W]*Model)/.exec(@code)
+    matches = /class\W+([^\W]+)(\W+extends\W+([^\W]+))?/.exec(@code)
     throw new Error 'Could not find a model defined' unless matches?
+
     @name = matches[1]
-    @extends = matches[2]
+    @extends = matches[3]
+    @code = @code.replace(/class\W+([^\W]+)(\W+extends\W+([^\W]+))?/, "class @#{@name}#{if @extends? then ' extends ' + @extends else ''}")
+    
+    return @not_model = true if !@extends? or !/Model$/.test(matches[3])
+
     scope_var = "__scope_#{@name}__"
-    @code = @code.replace(/class\W+([^\W]+)\W+extends\W+([^\W]*Model)/, "class @#{@name} extends #{@extends}")
     
     indent = /\n([ \t]+)/.exec(@code)
     indent = if indent? then indent[1] else '  '
@@ -73,19 +77,16 @@ class ModelCompiler extends Compiler
     # @apply_precompile_plugins 'models'
 
   postcompile: ->
+    return if @not_model
+
     methods = Object.keys(@scope[@name]::).filter (k) -> k isnt 'constructor'
     for method in methods
       @builder.instance method, @scope[@name]::[method]
     # @apply_postcompile_plugins 'models'
   
   respond: ->
-    @response = @builder.build()
-    
-    # short_name = /\/([^\/.]+)\_controller.coffee$/.exec(@fullPath)[1]
-    
-    # @response = new ControllerFactory @name, short_name, @extends, @scope.class, @filters, @helpers
-    # @apply_respond_plugins 'models'
-    @response
+    return @scope[@name] if @not_model
+    @builder.build()
 
   @compile = (file) ->
     file = new Path(file) unless file instanceof Path

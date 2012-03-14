@@ -23,7 +23,9 @@
     "consolidate": "latest",
     "npm": "latest",
     "kexec": "latest",
-    "yaml": "latest"
+    "yaml": "latest",
+    "mime": "latest",
+    "async": "latest"
   },
   "devDependencies": {
     "vows": "latest"

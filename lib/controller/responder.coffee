@@ -1,137 +1,50 @@
 _ = require 'underscore'
-Path = require '../path'
-consolidate = require 'consolidate'
-
-resolve_view = (root, view, format, is_partial) ->
-  view = new Path(view)
-  view = if view.is_absolute() then new Path(view.path.replace(/^\/+/, '')) else new Path(root).join(view.path)
-  name = (if is_partial and view.filename[0] isnt '_' then '_' else '') + view.filename
-  try
-    files = (if view.is_absolute() then new Path(view.dirname) else Caboose.path.views.join(view.dirname)).readdir_sync()
-    _(files).find((f) -> f.basename is "#{name}.#{format}") || _(files).find((f) -> f.basename is name)
-  catch e
-
-resolve_layout = (controller, format) ->
-  layouts_dir = Caboose.path.views.join('layouts')
-  return resolve_view(layouts_dir, controller, format) if typeof controller is 'string'
-  
-  c = Caboose.registry.get(controller._name)
-  while c
-    layout = resolve_view(layouts_dir, c._short_name, format)
-    return layout if layout?
-    c = Caboose.registry.get(c._extends)
-  null
-
-compile_helpers = (controller) ->
-  _.extend.bind(null, {}).apply(null, controller._helpers)
-
-render_view = (engine, view_path, local_data, callback) ->
-  try
-    consolidate[engine] view_path, local_data, callback
-  catch err
-    console.error "The #{engine} view engine is not installed. To fix this, run 'npm install #{engine}'" if err.message is "Cannot find module '#{engine}'"
-    callback(err)
-
-render = (controller, data, options, callback) ->
-  counter = 0
-  render_count = 1
-  
-  rendered_text = null
-  partial_table = {}
-  done = (err, str, partial_id) ->
-    return callback(err) if err?
-    
-    if partial_id?
-      partial_table[partial_id] = str
-    else
-      rendered_text = str
-    
-    if ++counter is render_count
-      rendered_text = rendered_text.replace(id, text) for id, text of partial_table
-      callback(null, rendered_text)
-  
-  render_partial = (partial_view, partial_data) ->
-    ++render_count
-
-    partial_var = new Path(partial_view).filename.replace(/^\_+/, '')
-    partial_locals = _.extend({partial: render_partial}, compile_helpers(controller), partial_data || data || controller)
-    partial_view = resolve_view(controller._short_name, partial_view, controller.params.format, true)
-    partial_key = "PARTIAL[#{render_count}]"
-    
-    if Array.isArray(partial_data)
-      array_data = Array::slice.apply(partial_data)
-      array_done = _.after partial_data.length, -> done(null, array_data.join('\n'), partial_key)
-      partial_data.forEach (item, idx) ->
-        partial_array_locals = _.extend({}, partial_locals)
-        partial_array_locals[partial_var] = item
-        render_view partial_view.extension, partial_view.path, partial_array_locals, (err, partial_text) ->
-          return done(err) if err?
-          array_data[idx] = partial_text
-          array_done()
-    else
-      render_view partial_view.extension, partial_view.path, partial_locals, (err, partial_text) ->
-        done(err, partial_text, partial_key)
-    
-    partial_key
-
-  locals = _.extend({partial: render_partial}, compile_helpers(controller), data || controller)
-  # console.log locals
-
-  view = resolve_view(controller._short_name, controller._view, controller.params.format)
-  return callback(new Error("No view found for #{controller._short_name} #{controller._view} #{controller.params.format}")) unless view?
-  render_view view.extension, view.path, locals, (err, text) ->
-    return done(err, text) if err? or (options?.layout? and !options.layout)
-    
-    layout = resolve_layout(options?.layout || controller, controller.params.format)
-    return done(err, text) unless layout?
-    
-    locals.yield = -> text
-    render_view layout.extension, layout.path, locals, done
+mime = require 'mime'
+View = require '../view/view'
 
 class Responder
   constructor: (@req, @res, @next) ->
-    @_renderers = {
-      html: (controller, data, options) =>
-        render controller, data, options, (err, html) =>
-          return console.error(err.stack) if err?
-          @res.contentType 'text/html'
-          @res.send html, 200
-      json: (controller, data, options) =>
-        @res.contentType 'application/json'
-        @res.send data, 200
-    }
+    # @_renderers = {
+    #   html: (controller, data, options) =>
+    #     render controller, data, options, (err, html) =>
+    #       return console.error(err.stack) if err?
+    #       @res.contentType 'text/html'
+    #       @res.send html, 200
+    #   json: (controller, data, options) =>
+    #     @res.contentType 'application/json'
+    #     @res.send data, 200
+    # }
 
   set_headers: (options) ->
     set_header = (k, v) => @res.header(k, v)
     if options?.headers?
       set_header k, v for k, v of options.headers
-
-  render: (controller, data, options) ->
-    format = @req.params.format
-    renderer = @_renderers[format]
-    @set_headers options
-    @res.send 404 unless renderer?
-    try
-      renderer controller, data, options
-    catch err
-      console.error err.stack
-      @next err
-    
-    # return res.send 404 if not @view?.htmlTemplate?
   
-  not_found: (err) ->
-    return @res.send err, 404 if err?
-    @res.send 404
-  
-  unauthorized: (options) ->
-    @set_headers options
-    @res.send 401
-      
   redirect_to: (url, options) ->
     @set_headers options
     @res.redirect url
   
-  respond: () ->
+  respond: (opts) ->
+    # {
+    #   code: 
+    #   content: (Error | 'html' | string)
+    #   controller:
+    #   view:
+    #   options:
+    # }
+    opts.code ?= 200
+    opts.options ?= {}
     
+    @set_headers opts.options
+    
+    status_class = Math.floor(opts.code / 100)
+    return @res.redirect(opts.content, opts.code) if status_class is 3
+    return @res.send(opts.content, opts.code) if opts.content?
+    
+    content_type = mime.lookup(@req.params.format)
+    View.render content_type, opts, (err, content) =>
+      return @next(err) if err?
+      @res.contentType(content_type)
+      @res.send(content, opts.code)
 
 module.exports = Responder

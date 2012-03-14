@@ -15,8 +15,7 @@ class Route
     req.params.format = req.query.format || Route.lookup_type(req.headers.accept) || 'html' unless req.params.format?
 
     ControllerType = Caboose.registry.get("#{@options.controller}_controller")
-    return res.send(404) unless ControllerType?
-    # return res.send(404) if controller_factory.responds_to? and req.params.format not in controller_factory.responds_to
+    return next(new Error("Could not find #{@options.controller}_controller")) unless ControllerType?
 
     controller = new ControllerType(req, res, next)
     controller._execute @options.action

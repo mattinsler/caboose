@@ -1,53 +1,76 @@
+async = require 'async'
 Responder = require './responder'
 
 class Controller
   constructor: (req, res, next) ->
-    @_responder = new Responder(req, res, next)
-    @flash = @session.flash ? {}
+    Object.defineProperty @, '_responder', {value: new Responder(req, res, next)}
+    Object.defineProperty @, 'flash', {value: @session?.flash ? {}}
     delete @session.flash
+  
+  @after: (method_name, callback) ->
+    Object.defineProperty(@, '_after', enumerable: false, value: {}) unless @_after?
+    (@_after[method_name] ?= []).push callback
+
+  @before: (method_name, callback) ->
+    Object.defineProperty(@, '_before', enumerable: false, value: {}) unless @_before?
+    (@_before[method_name] ?= []).push callback
+
+  _apply_after: (method_name, args, next) ->
+    return next() unless @constructor._after?[method_name]?
+    async.series(@constructor._after[method_name].map((i) -> (cb) -> i.apply(@, [cb].concat(Array::slice.call(args)))), next)
+
+  _apply_before: (method_name, args, next) ->
+    return next() unless @constructor._before?[method_name]?
+    async.series(@constructor._before[method_name].map((i) => (cb) => i.apply(@, [cb].concat(Array::slice.call(args)))), next)
 
   _execute: (action) ->
-    throw new Error "Could not find #{action} in #{@_name}" if not this[action]?
+    throw new Error "Could not find #{action} in #{@_name}" if not @[action]?
     @_action = action
     
-    x = 0
-    next = (err) =>
-      return @error err if err?
-      return this[action].call(this) if x is @_before_actions.length
-      filter = @_before_actions[x++]
-      return next() if filter.only? and not (action in filter.only)
-      if typeof filter.method is 'string'
-        return next(new Error("Filter #{filter.method} does not exist")) unless this[filter.method]?
-        this[filter.method].call(this, next)
-      else if typeof filter.method is 'function'
-        filter.method.call(this, next)
-    next()
+    @_apply_before '_execute', [action], (err) =>
+      @error(err) if err?
+      @[action].call(@, action)
+  
+  respond: -> @_responder.respond(arguments...)
 
   not_found: (err) ->
-    @_responder.not_found err
-  error: (err) ->
-    @_responder.next err
-  unauthorized: ->
-    @_responder.unauthorized.apply @_responder, arguments
-  render: (view, data, options) ->
-    if arguments.length is 0
-      @_view = @_action
-      data = this
-    else if typeof view is 'string'
-      @_view = view
-      data ?= this
-    else
-      @_view = @_action
-      options = data
-      data = view
-      
-    @_responder.render(this, data, options)
-  redirect_to: (url, options) ->
-    if options?
-      @session.flash = options
-    @_responder.redirect_to url
-  respond: () ->
-    @responder.respond
+    @_responder.respond {
+      code: 404
+      content: if err instanceof Error then err else new Error(err)
+    }
+  
+  unauthorized: (err) ->
+    @_responder.respond {
+      code: 401
+      content: if err instanceof Error then err else new Error(err)
+    }
+
+  error: (err) -> @_responder.next err
+
+  redirect_to: (url, flash) ->
+    @session.flash = flash if flash?
+    @_responder.respond {
+      code: 302
+      content: url
+    }
+
+  # render()
+  # render(view)
+  # render(opts)
+  # render(view, opts)
+  render: (view, options) ->
+    view ?= @_action
+    if view? and typeof view is 'object'
+      options = view
+      view = @_action
+    throw new Error('View must be a string') if typeof view isnt 'string'
+    
+    @_responder.respond {
+      code: 200
+      controller: @
+      view: view
+      options: options
+    }
     
   # options: httpOnly, secure, expires, maxAge
   set_cookie: (name, value, options) ->

@@ -13,7 +13,6 @@ class Generators
   
   generate: (type, args...) ->
     return logger.error("No generator for type #{type}") unless @generators[type]?
-    
     @generators[type].method(args...)
   
   supported_types: ->

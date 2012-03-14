@@ -58,6 +58,7 @@ if not global.Caboose?
 
 exports.registry = global.Caboose.registry
 exports.path = Path
+exports.promise = require './lib/promise'
 
 exports.Compiler = require './lib/compiler'
 exports.controller = {
@@ -66,5 +67,7 @@ exports.controller = {
   Compiler: require './lib/controller/controller_compiler'
   Responder: require './lib/controller/responder'
 }
+
+exports.view = require './lib/view/view'
 
 require './lib/controller/generator'

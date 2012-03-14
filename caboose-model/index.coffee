@@ -9,18 +9,18 @@ module.exports = global['caboose-model'] = caboose_model =
   configure: (config) ->
     @config = config
     # Test the connection
-    caboose_model.Collection.create 'test', (err) ->
-      if err?
-        if err.code is 'ECONNREFUSED'
-          logger.error 'Could not connect to MongoDB database'
-        else
-          logger.error err.stack
-        process.exit(1)
+    # caboose_model.Collection.create 'test', (err) ->
+    #   if err?
+    #     if err.code is 'ECONNREFUSED'
+    #       logger.error 'Could not connect to MongoDB database'
+    #     else
+    #       logger.error err.stack
+    #     process.exit(1)
     @
   
   'caboose-plugin': {
     install: (util, logger) ->
-      util.mkdir(Caboose.path.models)
+      util.mkdir(Caboose.path.app.join('models'))
       util.create_file(
         Caboose.path.config.join('caboose-model.json'),
         JSON.stringify({host: 'localhost', port: 27017, database: Caboose.app.name}, null, 2)

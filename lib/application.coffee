@@ -111,11 +111,17 @@ module.exports = class Application
     return callback() if not @config.http.enabled
     @_apply_before 'boot'
     @http = express.createServer()
-
+    
     middleware = Caboose.path.config.join('middleware').require()
     middleware @http
     
-    @http.listen @config.http.port
+    if Caboose.env is 'production'
+      @http.use express.errorHandler(dumpExceptions: true)
+    else
+      @http.use express.errorHandler(showStack: true, dumpExceptions: true)
+    
+    @http.listen(@config.http.port)
+    throw new Error("Could not listen on port #{@config.http.port}") unless @http.address()
 
     @_apply_after 'boot'
 
