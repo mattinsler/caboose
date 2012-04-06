@@ -1,3 +1,5 @@
+path = require 'path'
+
 logger = module.exports =
   indent: '          '
   
@@ -16,3 +18,7 @@ logger = module.exports =
     console.log "#{logger.indent}mkdir   ".blue + file_path
   file_alter: (file_path) ->
     console.log "#{logger.indent}alter   ".grey + file_path
+  
+  log: (message) ->
+    [x, method, file, line, column] = /at ([^ ]+) [^(]*\(([^:]+):([^:]+):([^)]+)\)/.exec(new Error().stack.split('\n'))
+    console.log "[#{method} (#{path.basename(file)}:#{line})] #{message}"

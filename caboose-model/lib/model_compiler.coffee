@@ -2,35 +2,6 @@ caboose = require 'caboose'
 Path = caboose.path
 Compiler = caboose.Compiler
 Builder = require './builder'
-# 
-# Model = require 'caboose-model'
-# 
-# User = Model.create('User')
-#             .store_in('user')
-#             .authenticate_using('email', 'password')
-#             .authenticate_with_token('auth_token')
-# 
-# User.static 'find_by_email', (email) ->
-#   @where {email: email}
-# 
-# User.instance 'full_name', ->
-#   "#{@first_name} #{@last_name}"
-# 
-# module.exports = User.build()
-
-# // class User extends Model
-# //   store_in 'user'
-# //   
-# //   authenticate_using 'email', 'password'
-# //   authenticate_with_token 'auth_token'
-# //   
-# //   static 'find_by_email', (email) ->
-# //     @where {email: email}
-# //   
-# //   instance 'full_name', ->
-# //     "#{@first_name} #{last_name}"
-
-
 
 class ModelCompiler extends Compiler
   precompile: ->
@@ -41,8 +12,11 @@ class ModelCompiler extends Compiler
     @extends = matches[3]
     @code = @code.replace(/class\W+([^\W]+)(\W+extends\W+([^\W]+))?/, "class @#{@name}#{if @extends? then ' extends ' + @extends else ''}")
     
-    return @not_model = true if !@extends? or !/Model$/.test(matches[3])
-
+    if !@extends? or !/Model$/.test(matches[3])
+      while import_call = /import\W+\(?\W*('([^']+)'|"([^"]+)")\W*\)?/.exec(@code)
+        @code = @code.replace import_call[0], "#{import_call[2]} = Caboose.get('#{import_call[2]}')\n"
+      return @not_model = true
+    
     scope_var = "__scope_#{@name}__"
     
     indent = /\n([ \t]+)/.exec(@code)
@@ -68,7 +42,7 @@ class ModelCompiler extends Compiler
           @builder[k](args...)
     
     while import_call = /import\W+('([^']+)'|"([^"]+)")/.exec(@code)
-      import_object = global.registry.get import_call[2]
+      import_object = Caboose.get import_call[2]
       import_object = import_object.class if import_object.type is 'controller'
       @scope[import_call[2]] = import_object
       @code = @code.replace import_call[0], ''
@@ -89,6 +63,7 @@ class ModelCompiler extends Compiler
     @builder.build()
 
   @compile = (file) ->
+    # Caboose.logger.log "compiling #{file}"
     file = new Path(file) unless file instanceof Path
     return null unless file.exists_sync()
     compiler = new ModelCompiler()

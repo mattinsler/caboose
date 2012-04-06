@@ -20,6 +20,8 @@ render_view = (engine, view_path, local_data, callback) ->
 #   }
 # }
 module.exports = (opts, callback) ->
+  DEFAULT_HELPERS = _.extend({}, require('../helpers/view_helper'), require('../helpers/form_helper'))
+
   view = opts.view
   controller = opts.controller
   options = opts.options
@@ -45,7 +47,7 @@ module.exports = (opts, callback) ->
     ++render_count
 
     partial_var = new Path(partial_view).filename.replace(/^\_+/, '')
-    partial_locals = _.extend({partial: render_partial}, controller._helpers, partial_data || controller)
+    partial_locals = _.extend({partial: render_partial}, DEFAULT_HELPERS, controller._helpers, partial_data || controller)
     partial_view = ViewResolver.resolve_view(controller._short_name, partial_view, controller.params.format, true)
     partial_key = "PARTIAL[#{render_count}]"
 
@@ -65,7 +67,7 @@ module.exports = (opts, callback) ->
 
     partial_key
 
-  locals = _.extend({partial: render_partial}, controller._helpers, controller)
+  locals = _.extend({partial: render_partial}, DEFAULT_HELPERS, controller._helpers, controller)
   # console.log locals
 
   view_file = ViewResolver.resolve_view(controller._short_name, view, 'html')

@@ -120,7 +120,7 @@ Builder.plugins = [{
         filters = filters_for(@, funcs, action)
       catch e
         next(e)
-        
+
       async.series(filters.map((i) => (cb) => i.call(@, cb, action)), next)
 }, {
 #   name: 'after_action'
@@ -134,7 +134,6 @@ Builder.plugins = [{
   build: (controller) ->
     helpers = @_helpers
     helpers.push(controller.__super__._helpers) if controller.__super__?._helpers?
-    helpers.push(require('../view/helpers/view_helper')) if controller._extends is 'Controller'
     controller::_helpers = _.extend.bind(null, {}).apply(null, helpers)
 }]
 

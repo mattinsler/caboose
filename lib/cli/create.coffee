@@ -17,3 +17,5 @@ exports.method = (project_name) ->
   package = util.read_package base
   package.name = project_name
   util.write_package package, base
+
+  util.npm_install 'ejs'
