@@ -1,7 +1,10 @@
 _ = require 'underscore'
 _.str = require 'underscore.string'
 _.mixin _.str.exports()
-Model = require('caboose-model').Model
+try
+  Model = require('caboose-model').Model
+catch e
+  # no op
 
 class FormBuilder
   constructor: (@context, @obj, @opts) ->
@@ -15,7 +18,7 @@ class FormBuilder
         when 'edit', 'update' then @opts.method = 'PUT'
         when 'destroy' then @opts.method = 'DELETE'
     
-    @opts.as = @obj._type._short_name if !@opts.as? and @obj instanceof Model
+    @opts.as = @obj._type._short_name if !@opts.as? and Model? and @obj instanceof Model
     @opts.as ?= 'data'
     
     @opts.path ?= @context.request.url

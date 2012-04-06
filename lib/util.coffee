@@ -2,12 +2,16 @@ _ = require 'underscore'
 Path = require './path'
 logger = Caboose.logger
 
-_npm_install = (package, callback) ->
+_npm_install = (package, root, callback) ->
+  callback = root if typeof root is 'function'
+  root ||= Caboose.root
+  root = new Path(root) unless root instanceof Path
+  
   npm = require('npm')
-  tmp_file = Caboose.root.join(new Buffer(16).toString('hex') + '.tmp')
+  tmp_file = root.join(new Buffer(16).toString('hex') + '.tmp')
   stream = tmp_file.create_write_stream()
   logger.message "Trying to npm install #{package}".green, 0
-  npm.load {prefix: Caboose.root.path, logfd: stream, outfd: stream, loglevel: 'silent'}, (err) ->
+  npm.load {prefix: root.path, logfd: stream, outfd: stream, loglevel: 'silent'}, (err) ->
     return callback(err) if err?
     npm.commands.install [package], (err, a, result, str) ->
       stream.destroy()
@@ -93,31 +97,36 @@ util = module.exports =
       package['caboose-plugins'] = [] unless package['caboose-plugins']?
       package['caboose-plugins'] = _(package['caboose-plugins']).reject (p) -> p is plugin_name
 
-  add_dependency_to_package: (plugin_name, version) ->
-    util.alter_package (package) ->
+  add_dependency_to_package: (plugin_name, version, root = Caboose.root) ->
+    util.alter_package ((package) ->
       package.dependencies = {} unless package.dependencies?
       package.dependencies[plugin_name] = version
+    ), root
   
   remove_dependency_from_package: (plugin_name) ->
     util.alter_package (package) ->
       package.dependencies = {} unless package.dependencies?
       delete package.dependencies[plugin_name]
   
-  npm_install: (package, callback) ->
+  npm_install: (package, root, callback) ->
+    callback = root if typeof root is 'function'
+    root ||= Caboose.root
+    root = new Path(root) unless root instanceof Path
+    
     logger.title "Installing #{package}"
     done = (err) ->
       if err?
         logger.error "An error occured while running npm install #{package}"
         return callback and callback(err)
-      util.add_dependency_to_package(package, util.read_package(Caboose.root.join('node_modules', package)).version)
+      util.add_dependency_to_package(package, util.read_package(root.join('node_modules', package)).version, root)
       logger.title "Installed #{package}"
       callback and callback(null, true)
     
-    if Caboose.root.join('node_modules', package).exists_sync()
+    if root.join('node_modules', package).exists_sync()
       try
         require(package)
         return done()
       catch e
     
     logger.error "#{package} is not installed.  Installing with npm..."
-    _npm_install package, done
+    _npm_install package, root, done

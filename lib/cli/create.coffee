@@ -18,4 +18,4 @@ exports.method = (project_name) ->
   package.name = project_name
   util.write_package package, base
 
-  util.npm_install 'ejs'
+  util.npm_install 'ejs', Caboose.root.join(project_name)
