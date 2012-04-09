@@ -1,4 +1,4 @@
-caboose = require 'caboose'
+caboose = Caboose.exports
 Path = caboose.path
 Compiler = caboose.Compiler
 Builder = require './builder'

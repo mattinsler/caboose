@@ -27,6 +27,7 @@ Application = require './lib/application'
 
 if not global.Caboose?
   Caboose = global.Caboose = {
+    exports: exports
     root: new Path()
     env: process.env.CABOOSE_ENV ? 'development'
     get: -> Caboose.registry.get(arguments...)

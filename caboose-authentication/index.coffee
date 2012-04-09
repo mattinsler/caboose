@@ -1,6 +1,6 @@
 bcrypt = require 'bcrypt'
 crypto = require 'crypto'
-caboose = require 'caboose'
+caboose = Caboose.exports
 
 generate_token = exports.generate_token = (length) ->
   crypto.randomBytes(Math.ceil(length / 2)).toString('hex').substr(0, length)
