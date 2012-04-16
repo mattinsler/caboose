@@ -10,4 +10,4 @@
 
 module.exports = (opts, callback) ->
   process.nextTick ->
-    callback(null, JSON.stringify(opts.controller))
+    callback(null, JSON.stringify(opts.options.json))

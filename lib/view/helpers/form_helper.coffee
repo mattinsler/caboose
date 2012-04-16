@@ -36,20 +36,29 @@ class FormBuilder
     @ended = true
     @context.form_tag_end()
   
-  label: (field) ->
-    @context.label_tag(_(field).humanize(), for: @_field_name(field))
+  label: (field, options) ->
+    @context.label_tag(_(field).humanize(), _.extend({}, {for: @_field_name(field)}, options))
   
-  text: (field) ->
-    @context.text_field_tag(@_field_name(field), @obj[field] || '')
+  text: (field, options) ->
+    @context.text_field_tag(@_field_name(field), @obj[field] || '', options)
   
-  password: (field) ->
-    @context.password_field_tag(@_field_name(field), @obj[field] || '')
+  password: (field, options) ->
+    @context.password_field_tag(@_field_name(field), @obj[field] || '', options)
     
-  textarea: (field) ->
-    @context.text_area_tag(@_field_name(field), @obj[field] || '')
+  textarea: (field, options) ->
+    @context.text_area_tag(@_field_name(field), @obj[field] || '', options)
   
-  submit: (text) ->
-    @context.submit_tag(text)
+  hidden: (field, options) ->
+    @context.hidden_field_tag(@_field_name(field), @obj[field] || '', options)
+    
+  select: (field, values, options) ->
+    @context.select_tag(@_field_name(field), @obj[field] || '', values, options)
+  
+  submit: (text, options) ->
+    if typeof text isnt 'string'
+      options = text
+      text = null
+    @context.submit_tag(text, options)
 
 module.exports = {
   form_for: (obj, opts) ->

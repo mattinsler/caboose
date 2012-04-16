@@ -122,24 +122,41 @@ class Configurator
     node.methods[options.method] = [] unless node.methods[options.method]?
     node.methods[options.method].push {route: new Route(options), conditions: conditions}
   
-  resources: (path, routing_method) ->
-    @route path, "#{path}#index"
-    @route "#{path}/new", "#{path}#new"
-    @route "post #{path}", "#{path}#create"
-    @route "#{path}/:id", "#{path}#show"
-    @route "#{path}/:id/edit", "#{path}#edit"
-    @route "put #{path}/:id", "#{path}#update"
-    @route "delete #{path}/:id", "#{path}#destroy"
-    routing_method.call(new Configurator(@root, _.extend({}, @options, {base_path: (@options?.base_path || '') + "#{path}/:#{path}_id"}))) if routing_method?
+  resources: (path, options, routing_method) ->
+    if typeof options is 'function'
+      routing_method = options
+      options = {}
+    if typeof options is 'string'
+      options = {controller: options}
+    options ||= {}
+    options.controller ||= path
     
+    @route path, "#{options.controller}#index"
+    @route "#{path}/new", "#{options.controller}#new"
+    @route "post #{path}", "#{options.controller}#create"
+    @route "#{path}/:id", "#{options.controller}#show"
+    @route "#{path}/:id/edit", "#{options.controller}#edit"
+    @route "put #{path}/:id", "#{options.controller}#update"
+    @route "delete #{path}/:id", "#{options.controller}#destroy"
+
+    if routing_method?
+      options = _.extend({}, @options, {base_path: (@options?.base_path || '') + "#{path}/:#{path}_id"})
+      routing_method.call(new Configurator(@root, options))
+    
+  namespace: (path, routing_method) ->
+    options = _.extend({}, @options, {base_path: (@options?.base_path || '') + path})
+    routing_method.call(new Configurator(@root, options))
+  
   domain: (domain, routing_method) ->
     throw new Error('Cannot have more than one domain condition in a route') if @options?.conditions?.domain?
-    options = _.extend(@options || {}, {conditions: {domain: domain}})
+
+    options = _.extend({}, @options, {conditions: {domain: domain}})
     routing_method.call(new Configurator(@root, options))
 
   subdomain: (subdomain, routing_method) ->
     throw new Error('Cannot have more than one subdomain condition in a route') if @options?.conditions?.subdomain?
-    options = _.extend(@options || {}, {conditions: {subdomain: subdomain}})
+
+    options = _.extend({}, @options, {conditions: {subdomain: subdomain}})
     routing_method.call(new Configurator(@root, options))
 
 module.exports = class Router
