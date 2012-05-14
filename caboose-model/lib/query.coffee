@@ -1,5 +1,5 @@
 _ = require 'underscore'
-Promise = require './promise'
+Promise = Caboose.exports.promise
 
 module.exports = class Query
   constructor: (@model, @query) ->

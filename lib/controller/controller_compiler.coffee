@@ -33,11 +33,14 @@ class ControllerCompiler extends Compiler
           throw new Error("#{k} is not defined") if @scope[scope_var] isnt true
           @builder[k](args...)
     
-    while import_call = /import\W+('([^']+)'|"([^"]+)")/.exec(@code)
+    while import_call = /^\W*import\W+('([^']+)'|"([^"]+)")/.exec(@code)
       import_object = Caboose.registry.get import_call[2]
       import_object = import_object.class if import_object.type is 'controller'
       @scope[import_call[2]] = import_object
       @code = @code.replace import_call[0], ''
+
+    while require_call = /^\W*require\W+('([^']+)'|"([^"]+)")/.exec(@code)
+      @code = @code.replace require_call[0], "#{require_call[2]} = require '#{require_call[2]}'"
 
     # @apply_scope_plugins 'models'
     # @apply_precompile_plugins 'models'

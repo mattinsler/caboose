@@ -179,12 +179,16 @@ module.exports = class Router
       req.params = {} unless req.params?
 
       matching = new MatchingRoutes(@root, req)
-      for segment in req.parsed.pathname.split('/').filter((s) -> s isnt '')
+      segments = req.parsed.pathname.split('/').filter((s) -> s isnt '')
+      last = segments[segments.length - 1]
+      segments[segments.length - 1] = last.split('.')[0]
+      for segment in segments
         return next() unless matching.next_segment(segment)
     
       route = matching.route(req.method)
       return next() unless route?
 
+      req.params.format = last.split('.')[1..].join('.') if last.split('.')[1..].length > 0
       route.respond(req, res, next)
     catch e
       console.error(e.stack) if e?

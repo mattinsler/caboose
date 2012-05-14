@@ -50,6 +50,24 @@ commands = {
   uninstall: (plugin_name) ->
     util.remove_plugin_from_package plugin_name
     logger.title "Uninstalled #{plugin_name}..."
+  
+  create: (plugin_name) ->
+    return logger.error('Must specify a plugin name') unless plugin_name?
+    
+    base = Caboose.root.join(plugin_name)
+    return logger.error("Error: File or directory '#{plugin_name}' already exists") if base.exists_sync()
+    
+    template = new Caboose.exports.path(__dirname).join('..', '..', 'templates', 'plugin')
+    logger.title "Creating a new Caboose plugin at #{base}"
+
+    util.copy_dir template, base, {
+      replace: {
+        'PLUGIN-NAME': plugin_name
+        YEAR: new Date().getFullYear()
+        'USER-NAME': process.env.USER
+        'USER-EMAIL': "#{process.env.USER}@gmail.com"
+      }
+    }
 }
 
 exports.method = (command, plugin_name, args...) ->

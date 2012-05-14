@@ -1,0 +1,7 @@
+{
+  "author": "%USER-NAME% <%USER-EMAIL%>",
+  "name": "%PLUGIN-NAME%",
+  "description": "%PLUGIN-NAME%: a Caboose plugin",
+  "version": "0.0.1",
+  "main": "index"
+}

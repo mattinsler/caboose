@@ -31,7 +31,7 @@ util = module.exports =
         logger.file_mkdir(d)
         d.mkdir_sync(mode)
 
-  copy_dir: (from, to) ->
+  copy_dir: (from, to, options) ->
     from = new Path(from) unless from instanceof Path
     to = new Path(to) unless to instanceof Path
     util.mkdir(to)
@@ -45,6 +45,11 @@ util = module.exports =
             _copy_dir file, to_file
           else
             file.copy_sync to_file
+            if options?.replace?
+              content = to_file.read_file_sync('utf8')
+              for k, v of options.replace
+                content = content.replace(new RegExp("%#{k}%", 'g'), v)
+              to_file.write_file_sync(content, 'utf8')
             logger.file_create to_file
     _copy_dir from, to
     

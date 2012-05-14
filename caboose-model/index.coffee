@@ -64,4 +64,4 @@ caboose_model.Connection = require './lib/connection'
 caboose_model.Collection = require './lib/collection'
 caboose_model.Model = require './lib/model'
 caboose_model.Query = require './lib/query'
-caboose_model.Promise = require './lib/promise'
+caboose_model.Promise = Caboose.exports.promise
