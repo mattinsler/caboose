@@ -20,7 +20,7 @@ render_view = (engine, view_path, local_data, callback) ->
 #   }
 # }
 module.exports = (opts, callback) ->
-  DEFAULT_HELPERS = _.extend({}, require('../helpers/view_helper'), require('../helpers/form_helper'))
+  DEFAULT_HELPERS = _.extend({}, require('../helpers/asset_helper'), require('../helpers/view_helper'), require('../helpers/form_helper'))
 
   view = opts.view
   controller = opts.controller
