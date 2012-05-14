@@ -4,7 +4,8 @@ Responder = require './responder'
 class Controller
   constructor: (req, res, next) ->
     Object.defineProperty @, '_responder', {value: new Responder(req, res, next)}
-    Object.defineProperty @, 'flash', {value: @session?.flash ? {}}
+    @flash = @session?.flash ? {}
+    # Object.defineProperty @, 'flash', {value: @session?.flash ? {}}
     delete @session.flash
   
   @after: (method_name, callback) ->
