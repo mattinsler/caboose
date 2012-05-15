@@ -7,7 +7,7 @@ module.exports = class Connection
     uri = require('url').parse conn_string
     options = {
       host: uri.hostname
-      port: uri.port ? 27017
+      port: parseInt(uri.port) ? 27017
       database: uri.pathname.replace /\//g, ''
     }
     if uri.auth?
