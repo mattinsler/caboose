@@ -28,7 +28,7 @@ module.exports = class Application
 
     for file in files
       switch file.extension
-        when 'json' then config[file.basename] = JSON.parse(file.read_file_sync('utf8'))
+        when 'json' then config[file.basename] = require('vm').runInThisContext('__xyna8277ghouehsf97g9w3f__ = ' + file.read_file_sync('utf8'), file.path)
         when 'yml', 'yaml' then config[file.basename] = require('yaml').eval(file.read_file_sync('utf8'))
 
   configure: (callback) ->
