@@ -1,6 +1,6 @@
 _ = require 'underscore'
 Path = require './path'
-logger = Caboose.logger
+logger = require './logger'
 
 _npm_install = (package, root, callback) ->
   callback = root if typeof root is 'function'

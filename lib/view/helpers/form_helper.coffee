@@ -28,6 +28,8 @@ class FormBuilder
     
   toString: ->
     buf = [@context.form_tag(@opts.path, method: 'POST')]
+    unless Caboose.app.config.controller?.csrf?.enabled is false
+      buf.push(@context.hidden_field_tag('_csrf', @session._csrf))
     if @opts.method in ['PUT', 'DELETE']
       buf.push(@context.hidden_field_tag('_method', @opts.method))
     buf.join("\n")
@@ -66,4 +68,7 @@ module.exports = {
       opts = obj
       obj = {}
     new FormBuilder(@, obj, opts)
+
+  csrf_tag: ->
+    @hidden_field_tag('_csrf', @session._csrf)
 }

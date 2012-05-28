@@ -2,6 +2,7 @@ _ = require 'underscore'
 Path = require './path'
 express = require 'express'
 Router = require './server/router'
+Plugins = require './plugins'
 
 module.exports = class Application
   constructor: (@name) ->
@@ -32,7 +33,15 @@ module.exports = class Application
         when 'yml', 'yaml' then config[file.basename] = require('yaml').eval(file.read_file_sync('utf8'))
 
   configure: (callback) ->
-    @config = {}
+    @config = {
+      http: {
+        enabled: true
+        port: process.env.PORT
+      }
+      controller: require('./controller/builder').config
+    }
+    _(@config).extend(@plugins.config())
+    
     try
       @read_config_files @config
     catch e
@@ -51,16 +60,6 @@ module.exports = class Application
         return callback(e) unless /Cannot find module/.test(e.message)
         next()
     next()
-  
-  load_plugins: ->
-    package = JSON.parse(Caboose.root.join('package.json').read_file_sync('utf8'))
-    @plugins = package['caboose-plugins']
-    if @plugins?
-      for p in @plugins
-        plugin = require(p)
-        throw new Error("#{p} is not a caboose plugin".red) unless plugin['caboose-plugin']?
-        if plugin['caboose-plugin'].initialize?
-          plugin['caboose-plugin'].initialize()
   
   run_initializers_in_path: (initializers_path, callback) ->
     return callback() unless initializers_path.exists_sync()
@@ -87,13 +86,16 @@ module.exports = class Application
     @_state.initializing = true
     @_state.callbacks = [callback]
     
+    @plugins = new Plugins()
+    @plugins.load()
+    
     @router = new Router()
     @router.parse Caboose.path.config.join('routes').require()
     @configure (err) =>
       if err?
         console.error err.stack
         process.exit 1
-      @load_plugins()
+      @plugins.initialize()
       @run_initializers (err) =>
         if err?
           console.error err.stack

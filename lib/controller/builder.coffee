@@ -38,10 +38,16 @@ build = ->
   controller
 
 class Builder
-  @add_plugin: (opts) ->
+  @config: {}
+  @plugins: []
+  
+  @add_plugin: (config_namespace, opts) ->
     if opts.name?
       for plugin in @plugins
         throw new Error("[Plugin #{opts.name}] another caboose controller plugin already exists with the same name") if opts.name is plugin.name
+    if opts.config?
+      throw new Error("[Plugin #{opts.name}] another caboose controller plugin is already using the same config namespace") if @config[config_namespace]?
+      @config[config_namespace] = opts.config
     @plugins.push opts
   
   constructor: (@name, @extends) ->
@@ -52,7 +58,7 @@ class Builder
     plugin.initialize?.apply(this) for plugin in Builder.plugins
     
     Object.defineProperty @, 'build', {value: build, enumerable: false}
-
+    
     for plugin in Builder.plugins
       do (plugin) =>
         if plugin.name? and plugin.execute?
@@ -98,12 +104,35 @@ filters_for = (context, filter_list, action) ->
       return filter.method
     throw new Error('Filter is neither a method or name of a method')
 
-Builder.plugins = [{
+Builder.add_plugin 'csrf',
+  config:
+    enabled: true
+    passive_aggressive: true
+    value: (request) ->
+      request.body?._csrf || request.query?._csrf || request.headers['x-csrf-token']
+  
+  build: (controller) ->
+    generate_token = ->
+      require('crypto').randomBytes(Math.ceil(24 * 3 / 4)).toString('base64').slice(0, 24)
+
+    # add csrf if configured
+    unless Caboose.app.config.controller.csrf.enabled is false
+      controller.before '_execute', (next) ->
+        token = @session._csrf ||= generate_token()
+        return next() if @request.method in ['GET', 'HEAD', 'OPTIONS']
+        value = Caboose.app.config.controller.csrf.value(@request)
+        if value isnt token
+          return next(new Error('Unauthorized')) unless Caboose.app.config.controller.csrf.passive_aggressive
+          console.log 'WARNING: CSRF protection is not being enforced!\n         Consider using form_for in your views or adding csrf_tag() to your forms and\n         turning off config.controller.csrf.passive_aggressive.'
+        next()
+
+Builder.add_plugin 'action',
   name: 'action'
   initialize: -> Object.defineProperty @, '_actions', {value: {}, enumerable: false}
   execute: (name, method) -> @_actions[name] = method
   build: (controller) -> controller::[k] = v for k, v of @_actions when k isnt 'constructor'
-}, {
+
+Builder.add_plugin 'before_action',
   name: 'before_action'
   initialize: -> Object.defineProperty @, '_before_actions', {value: [], enumerable: false}
   execute: (filter, options) -> @_before_actions.push(create_filter_object(filter, options))
@@ -122,12 +151,13 @@ Builder.plugins = [{
         next(e)
 
       async.series(filters.map((i) => (cb) => i.call(@, cb, action)), next)
-}, {
+
 #   name: 'after_action'
 #   initialize: -> Object.defineProperty @, '_after_actions', {value: [], enumerable: false}
 #   execute: (filter, options) -> @_after_actions.push(create_filter_object(filter, options))
 #   build: (controller) -> construct_inherited_list.call(@, controller, '_after_actions')
-# }, {
+
+Builder.add_plugin 'helper',
   name: 'helper'
   initialize: -> Object.defineProperty @, '_helpers', {value: [], enumerable: false}
   execute: (helper) -> @_helpers.push(helper)
@@ -135,6 +165,5 @@ Builder.plugins = [{
     helpers = @_helpers
     helpers.push(controller.__super__._helpers) if controller.__super__?._helpers?
     controller::_helpers = _.extend.bind(null, {}).apply(null, helpers)
-}]
 
 module.exports = Builder

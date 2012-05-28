@@ -18,18 +18,24 @@ class Controller
 
   _apply_after: (method_name, args, next) ->
     return next() unless @constructor._after?[method_name]?
-    async.series(@constructor._after[method_name].map((i) -> (cb) -> i.apply(@, [cb].concat(Array::slice.call(args)))), next)
+    methods = @constructor._after[method_name].map (i) ->
+      (cb) =>
+        i.apply @, [cb].concat(Array::slice.call(args))
+    async.series(methods, next)
 
   _apply_before: (method_name, args, next) ->
     return next() unless @constructor._before?[method_name]?
-    async.series(@constructor._before[method_name].map((i) => (cb) => i.apply(@, [cb].concat(Array::slice.call(args)))), next)
+    methods = @constructor._before[method_name].map (i) =>
+      (cb) =>
+        i.apply @, [cb].concat(Array::slice.call(args))
+    async.series(methods, next)
 
   _execute: (action) ->
     throw new Error "Could not find #{action} in #{@_name}" if not @[action]?
     @_action = action
     
     @_apply_before '_execute', [action], (err) =>
-      @error(err) if err?
+      return @error(err) if err?
       @[action].call(@, action)
   
   respond: -> @_responder.respond(arguments...)
