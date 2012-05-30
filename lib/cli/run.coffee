@@ -7,4 +7,4 @@ exports.method = (script) ->
   if script.indexOf('/') is 0
     require script
   else
-    new Path().join(script).require()
+    Caboose.root.join(script).require()
