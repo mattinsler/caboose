@@ -18,7 +18,7 @@ class FormBuilder
         when 'edit', 'update' then @opts.method = 'PUT'
         when 'destroy' then @opts.method = 'DELETE'
     
-    @opts.as = @obj._type._short_name if !@opts.as? and Model? and @obj instanceof Model
+    @opts.as = @obj._type.__short_name__ if !@opts.as? and Model? and @obj instanceof Model
     @opts.as ?= 'data'
     
     @opts.path ?= @context.request.url

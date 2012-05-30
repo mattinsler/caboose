@@ -6,5 +6,5 @@ exports.method = ->
   context.$_ = -> console.log(arguments)
   if Caboose.app?.models?
     for m in Caboose.app.models
-      name = if m._name? then m._name else /function ([^\(]+)/.exec(m.toString())[1]
+      name = if m.__name__? then m.__name__ else /function ([^\(]+)/.exec(m.toString())[1]
       context[name] = m

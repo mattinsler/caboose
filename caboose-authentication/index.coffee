@@ -20,7 +20,7 @@ initialize_model = (Model) ->
         bcrypt.encrypt_sync value, salt
   
       @instance "change_#{password_field}", (value) ->
-        @[password_field] = @_type.encrypt_password value
+        @[password_field] = @__type__.encrypt_password value
 
   Model.Builder.add_plugin
     name: 'authenticate_with_token'

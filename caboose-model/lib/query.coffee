@@ -30,7 +30,7 @@ module.exports = class Query
   first: (callback) ->
     promise = new Promise(callback)
 
-    @model._ensure_collection (c) =>
+    @model.__ensure_collection__ (c) =>
       @options.limit = 1
       c.find(@query, @options).nextObject (err, item) =>
         return promise.error(err) if err?
@@ -41,7 +41,7 @@ module.exports = class Query
   array: (callback) ->
     promise = new Promise(callback)
     
-    @model._ensure_collection (c) =>
+    @model.__ensure_collection__ (c) =>
       c.find(@query, @options).toArray (err, items) =>
         return promise.error(err) if err?
         if items?
@@ -51,7 +51,7 @@ module.exports = class Query
     promise
 
   each: (callback) ->
-    @model._ensure_collection (c) =>
+    @model.__ensure_collection__ (c) =>
       c.find(@query, @options).each (err, item) =>
         return callback(err) if err?
         callback null, (if item? then new @model(item) else null)
@@ -59,7 +59,7 @@ module.exports = class Query
   count: (callback) ->
     promise = new Promise(callback)
     
-    @model._ensure_collection (c) =>
+    @model.__ensure_collection__ (c) =>
       c.count @query, promise.callback.bind(promise)
     
     promise
@@ -67,7 +67,7 @@ module.exports = class Query
   distinct: (key, callback) ->
     promise = new Promise(callback)
     
-    @model._ensure_collection (c) =>
+    @model.__ensure_collection__ (c) =>
       c.distinct key, @query, promise.callback.bind(promise)
     
     promise

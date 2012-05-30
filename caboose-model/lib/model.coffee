@@ -7,7 +7,7 @@ class Model
     this[k] = v for k, v of doc
   
   save: (callback) ->
-    @_type.save this, callback
+    @__type__.save this, callback
   
   update: (query, update, callback) ->
     return callback new Error 'Models must have an _id field in order to call update' unless @_id?
@@ -17,18 +17,18 @@ class Model
       query = {_id: @_id}
     else
       query._id = @_id
-    @_type.update query, update, callback
+    @__type__.update query, update, callback
   
   remove: (callback) ->
     return callback new Error 'Models must have an _id field in order to call remove' unless @_id?
-    @_type.remove {_id: @_id}, callback
+    @__type__.remove {_id: @_id}, callback
   
-  @_ensure_collection: (callback) ->
-    return callback(@_collection) if @_collection?
-    Collection.create @_collection_name, (err, collection) =>
+  @__ensure_collection__: (callback) ->
+    return callback(@__collection__) if @__collection__?
+    Collection.create @__collection_name__, (err, collection) =>
       return console.error err.stack if err?
-      @_collection = collection
-      callback @_collection
+      @__collection__ = collection
+      callback @__collection__
   
   @first: (callback) ->
     new Query(this).first callback
@@ -61,10 +61,14 @@ class Model
     new Query(this, query)
 
   @save: (doc, callback) ->
-    @_ensure_collection (c) =>
+    @__ensure_collection__ (c) =>
       execute = ->
-        return c.save(doc, {safe: true}, callback) if callback?
-        c.save doc
+        if callback?
+          c.save doc, {safe: true}, (err) ->
+            callback(err, doc)
+        else
+          c.save doc
+          callback(null, doc)
 
       index = 0
       next = (err) =>
@@ -77,7 +81,7 @@ class Model
     callback = options if options? and typeof options is 'function'
     options or= {}
     options.safe = true if callback?
-    @_ensure_collection (c) ->
+    @__ensure_collection__ (c) ->
       c.update query, update, options, callback
 
   @update_multi: (query, update, callback) ->
@@ -87,7 +91,7 @@ class Model
     @update query, update, {upsert: true}, callback
   
   @remove: (query, callback) ->
-    @_ensure_collection (c) ->
+    @__ensure_collection__ (c) ->
       return c.remove(query, {safe: true}, callback) if callback?
       c.remove query
   
@@ -96,20 +100,20 @@ class Model
     for k in ['remove', 'new', 'upsert']
       opts[k] = options[k] if options[k]
     # collection.findAndModify(query, sort, update, options, callback)
-    @_ensure_collection (c) =>
+    @__ensure_collection__ (c) =>
       c.findAndModify options.query, options.sort || [], options.update, opts, callback
   
   @map_reduce: (map, reduce, options, callback) ->
-    @_ensure_collection (c) =>
+    @__ensure_collection__ (c) =>
       c.mapReduce map, reduce, options, (err, collection) ->
         return callback(err) if err?
         
         model = class extends Model
-        model._type = model
-        model._collection = collection
+        model.__type__ = model
+        model.__collection__ = collection
         callback(null, model)
 
-Object.defineProperty(Model, '_ensure_collection', {enumerable: false})
+Object.defineProperty(Model, '__ensure_collection__', {enumerable: false})
 
 field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
 try

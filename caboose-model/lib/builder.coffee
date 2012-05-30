@@ -7,14 +7,14 @@ build = ->
       @__init__()
   Object.defineProperty model, '__super__', {enumerable: false}
   model::__init__ = ->
-    Object.defineProperty this, '_type', {value: model, enumerable: false}
+    Object.defineProperty this, '__type__', {value: model, enumerable: false}
   # non-enumerable Model properties
-  for prop in ['_ensure_collection']
+  for prop in ['__ensure_collection__']
     Object.defineProperty model, prop, {value: Model[prop], enumerable: false}
   # private properties
-  Object.defineProperty model, '_type', {value: model, enumerable: false}
+  Object.defineProperty model, '__type__', {value: model, enumerable: false}
   for prop in ['name', 'short_name']
-    Object.defineProperty model, "_#{prop}", {value: this[prop], enumerable: false}
+    Object.defineProperty model, "__#{prop}__", {value: this[prop], enumerable: false}
   
   plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
   
@@ -79,7 +79,7 @@ Builder.plugins = [{
   name: 'store_in',
   execute: (collection_name) -> @_store_in = collection_name
   build: (model) ->
-    Object.defineProperty model, '_collection_name', {value: @_store_in, enumerable: false}
+    Object.defineProperty model, '__collection_name__', {value: @_store_in, enumerable: false}
 }]
 
 module.exports = Builder
