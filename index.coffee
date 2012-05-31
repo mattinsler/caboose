@@ -31,7 +31,10 @@ if not global.Caboose?
     root: new Path()
     env: process.env.CABOOSE_ENV ? 'development'
     get: -> Caboose.registry.get(arguments...)
+    argv: process.argv.slice()
   }
+  Caboose.command = Caboose.argv.slice(2)[0]
+  Caboose.arguments = Caboose.argv.slice(3)
   Caboose.path = {
     app: Caboose.root.join('app')
     config: Caboose.root.join('config')
