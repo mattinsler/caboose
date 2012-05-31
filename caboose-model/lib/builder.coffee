@@ -16,6 +16,9 @@ build = ->
   for prop in ['name', 'short_name']
     Object.defineProperty model, "__#{prop}__", {value: this[prop], enumerable: false}
   
+  field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
+  Object.defineProperty(model, fn, {value: Model[fn], enumerable: false}) for fn in field_names
+  
   plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
   
   model
