@@ -47,7 +47,7 @@ module.exports = (opts, callback) ->
     ++render_count
 
     partial_var = new Path(partial_view).filename.replace(/^\_+/, '')
-    partial_locals = _.extend({partial: render_partial}, DEFAULT_HELPERS, controller._helpers, partial_data || controller)
+    partial_locals = _.extend({partial: render_partial}, DEFAULT_HELPERS, controller._helpers, controller, partial_data)
     partial_view = ViewResolver.resolve_view(controller._short_name, partial_view, controller.params.format, true)
     partial_key = "PARTIAL[#{render_count}]"
 

@@ -1,5 +1,4 @@
 mongodb = require 'mongodb'
-Query = require './query'
 Collection = require './collection'
 
 class Model
@@ -31,34 +30,34 @@ class Model
       callback @__collection__
   
   @first: (callback) ->
-    new Query(this).first callback
+    new @__Query__(this).first callback
   
   @array: (callback) ->
-    new Query(this).array callback
+    new @__Query__(this).array callback
   
   @each: (callback) ->
-    new Query(this).each callback
+    new @__Query__(this).each callback
   
   @count: (callback) ->
-    new Query(this).count callback
+    new @__Query__(this).count callback
     
   @distinct: (key, callback) ->
-    new Query(this).distinct key, callback
+    new @__Query__(this).distinct key, callback
 
   @skip: (count) ->
-    new Query(this).skip(count)
+    new @__Query__(this).skip(count)
   
   @limit: (count) ->
-    new Query(this).limit(count)
+    new @__Query__(this).limit(count)
 
   @sort: (fields) ->
-    new Query(this).sort(fields)
+    new @__Query__(this).sort(fields)
   
   @fields: (fields) ->
-    new Query(this).fields(fields)
+    new @__Query__(this).fields(fields)
 
   @where: (query) ->
-    new Query(this, query)
+    new @__Query__(this, query)
 
   @save: (doc, callback) ->
     @__ensure_collection__ (c) =>
@@ -124,6 +123,5 @@ catch e
 
 for fn in field_names
   Object.defineProperty(Model, fn, {value: mongodb[bson][fn], enumerable: false})
-  Object.defineProperty(Query, fn, {value: mongodb[bson][fn], enumerable: false})
 
 module.exports = Model

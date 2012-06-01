@@ -1,13 +1,20 @@
 Model = require './model'
+Query = require './query'
+Promise = Caboose.exports.promise
 
 build = ->
   model = class extends Model
     constructor: ->
       super
       @__init__()
+  
   Object.defineProperty model, '__super__', {enumerable: false}
+  Object.defineProperty model, '__Query__', {value: class extends Query, enumerable: false}
+  Object.defineProperty model, '__Promise__', {value: class extends Promise, enumerable: false}
+
   model::__init__ = ->
-    Object.defineProperty this, '__type__', {value: model, enumerable: false}
+    Object.defineProperty @, '__type__', {value: model, enumerable: false}
+  
   # non-enumerable Model properties
   for prop in ['__ensure_collection__']
     Object.defineProperty model, prop, {value: Model[prop], enumerable: false}
@@ -20,7 +27,7 @@ build = ->
   Object.defineProperty(model, fn, {value: Model[fn], enumerable: false}) for fn in field_names
   
   plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
-  
+
   model
 
 class Builder
