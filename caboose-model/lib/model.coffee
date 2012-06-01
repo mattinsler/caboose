@@ -20,14 +20,14 @@ class Model
     @__type__.update query, update, callback
   
   remove: (callback) ->
-    return callback new Error 'Models must have an _id field in order to call remove' unless @_id?
+    return callback(new Error('Models must have an _id field in order to call remove')) unless @_id?
     @__type__.remove {_id: @_id}, callback
   
   @__ensure_collection__: (callback) ->
     return callback(@__collection__) if @__collection__?
     Collection.create @__collection_name__, (err, collection) =>
-      return console.error err.stack if err?
-      @__collection__ = collection
+      return console.error(err.stack) if err?
+      Object.defineProperty(@, '__collection__', {value: collection, enumerable: false}) unless @__collection__
       callback @__collection__
   
   @first: (callback) ->
@@ -68,7 +68,6 @@ class Model
             callback(err, doc)
         else
           c.save doc
-          callback(null, doc)
 
       index = 0
       next = (err) =>
