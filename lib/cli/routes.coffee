@@ -7,9 +7,9 @@ print_routes = (node, path = '', result = []) ->
   for method, routes of node.methods
     for r in routes
       result.push({
-        Method: method,
-        Path: (if path is '' then '/' else path),
-        Controller: r.route.options.controller,
+        Method: method
+        Path: (if path is '' then '/' else path)
+        Controller: r.route.options.controller
         Action: r.route.options.action
       })
   print_routes(child_node, path + '/:' + child_node.segment, result) for segment, child_node of node.params

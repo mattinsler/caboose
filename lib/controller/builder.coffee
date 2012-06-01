@@ -69,8 +69,8 @@ class Builder
 create_filter_object = (filter, options) ->
   options = filter if !options? and typeof filter is 'object'
   options = {only: null, except: null} unless options?
-  options.only = if options.only? then (if options.only instanceof Array then options.only else [options.only]) else null
-  options.except = if options.except? then (if options.except instanceof Array then options.except else [options.except]) else null
+  options.only = if options.only? then (if Array.isArray(options.only) then options.only else [options.only]) else null
+  options.except = if options.except? then (if Array.isArray(options.except) then options.except else [options.except]) else null
   options.method ?= filter
   throw new Error('Filters must specify a method') unless options.method?
   throw new Error('Filters can have either an only or except option') if options.only? and options.except?
