@@ -18,7 +18,7 @@ class FormBuilder
         when 'edit', 'update' then @opts.method = 'PUT'
         when 'destroy' then @opts.method = 'DELETE'
     
-    @opts.as = @obj._type.__short_name__ if !@opts.as? and Model? and @obj instanceof Model
+    @opts.as = @obj.__type__.__short_name__ if !@opts.as? and Model? and @obj instanceof Model
     @opts.as ?= 'data'
     
     @opts.path ?= @context.request.url
@@ -29,7 +29,7 @@ class FormBuilder
   toString: ->
     buf = [@context.form_tag(@opts.path, method: 'POST')]
     unless Caboose.app.config.controller?.csrf?.enabled is false
-      buf.push(@context.hidden_field_tag('_csrf', @session._csrf))
+      buf.push(@context.hidden_field_tag('_csrf', @context.session._csrf))
     if @opts.method in ['PUT', 'DELETE']
       buf.push(@context.hidden_field_tag('_method', @opts.method))
     buf.join("\n")
