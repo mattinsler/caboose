@@ -18,6 +18,19 @@ module.exports = global['caboose-model'] = caboose_model =
     #     process.exit(1)
     @
   
+  # This is to be used to ensure a connection is made
+  # Potentially the connection will not work and connect
+  # could be called multiple times until it works
+  connect: (callback) ->
+    return callback(null, caboose_model.connection) if caboose_model.connection?
+    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.config?
+    
+    conn = new caboose_model.Connection()
+    conn.open caboose_model.config, (err, c) ->
+      return callback(err) if err?
+      caboose_model.connection = c
+      callback(null, c)    
+  
   'caboose-plugin': {
     install: (util, logger) ->
       util.mkdir(Caboose.path.app.join('models'))
@@ -65,3 +78,4 @@ caboose_model.Collection = require './lib/collection'
 caboose_model.Model = require './lib/model'
 caboose_model.Query = require './lib/query'
 caboose_model.Promise = Caboose.exports.promise
+caboose_model.mongodb = require 'mongodb'
