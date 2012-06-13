@@ -90,6 +90,11 @@ Builder.plugins = [{
   execute: (collection_name) -> @_store_in = collection_name
   build: (model) ->
     Object.defineProperty model, '__collection_name__', {value: @_store_in, enumerable: false}
+}, {
+  name: 'use_connection',
+  execute: (connection_name) -> @_use_connection = connection_name
+  build: (model) ->
+    Object.defineProperty model, '__connection_name__', {value: @_use_connection, enumerable: false}
 }]
 
 module.exports = Builder

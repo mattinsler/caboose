@@ -2,11 +2,12 @@ caboose_model = require '../index'
 Connection = require './connection'
 
 module.exports = class Collection
-  @create: (collection_name, callback) ->
-    return caboose_model.connection.collection(collection_name, callback) if caboose_model.connection?
-    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.config?
+  @create: (connection_name, collection_name, callback) ->
+    return caboose_model.connections[connection_name].collection(collection_name, callback) if caboose_model.connections[connection_name]?
+    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.configs?
+    return callback(new Error("No configuration found for #{connection_name} connection")) unless caboose_model.configs[connection_name]?
     conn = new Connection()
-    conn.open caboose_model.config, (err, c) ->
+    conn.open caboose_model.configs[connection_name], (err, c) ->
       return callback(err) if err?
-      caboose_model.connection = c
-      caboose_model.connection.collection collection_name, callback
+      caboose_model.connections[connection_name] = c
+      caboose_model.connections[connection_name].collection collection_name, callback

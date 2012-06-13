@@ -1,35 +1,40 @@
 return module.exports = global['caboose-model'] if global['caboose-model']?
 
+_ = require 'underscore'
+async = require 'async'
 logger = Caboose.logger
 
 module.exports = global['caboose-model'] = caboose_model =
-  connection: null
+  connections: {}
 
   create: (name) -> new caboose_model.Builder(name)
   configure: (config) ->
-    @config = config
-    # Test the connection
-    # caboose_model.Collection.create 'test', (err) ->
-    #   if err?
-    #     if err.code is 'ECONNREFUSED'
-    #       logger.error 'Could not connect to MongoDB database'
-    #     else
-    #       logger.error err.stack
-    #     process.exit(1)
+    @configs = {}
+    if config.database? or config.url?
+      @configs.default = config
+    else
+      for k, v of config
+        @configs[k] = v
     @
   
   # This is to be used to ensure a connection is made
   # Potentially the connection will not work and connect
   # could be called multiple times until it works
   connect: (callback) ->
-    return callback(null, caboose_model.connection) if caboose_model.connection?
-    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.config?
+    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.configs?
     
-    conn = new caboose_model.Connection()
-    conn.open caboose_model.config, (err, c) ->
-      return callback(err) if err?
-      caboose_model.connection = c
-      callback(null, c)    
+    a = _(caboose_model.configs).inject (o, v, k) ->
+      o[k] = (cb) ->
+        return cb(null, caboose_model.connections[k]) if caboose_model.connections[k]?
+        return cb(new Error("No configuration found for #{k} connection")) unless caboose_model.configs[k]?
+        conn = new caboose_model.Connection()
+        conn.open caboose_model.configs[k], (err, c) ->
+          return callback(err) if err?
+          caboose_model.connections[k] = c
+          cb(null, c)
+    , {}
+    
+    async.parallel(a, callback)
   
   'caboose-plugin': {
     install: (util, logger) ->

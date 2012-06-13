@@ -24,7 +24,7 @@ class Model
   
   @__ensure_collection__: (callback) ->
     return callback(@__collection__) if @__collection__?
-    Collection.create @__collection_name__, (err, collection) =>
+    Collection.create (@__connection_name__ || 'default'), @__collection_name__, (err, collection) =>
       return console.error(err.stack) if err?
       Object.defineProperty(@, '__collection__', {value: collection, enumerable: false}) unless @__collection__
       callback @__collection__
