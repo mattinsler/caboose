@@ -1,6 +1,7 @@
 util = require 'util'
 mongodb = require 'mongodb'
 Model = require './model'
+caboose_model = require '../index'
 
 module.exports = class Connection
   _parse_options: (conn_string) ->
@@ -41,3 +42,37 @@ module.exports = class Connection
 
   collection: (name, callback) ->
     @db.collection name, callback
+
+  @create: (connection_name = 'default', callback) ->
+    if typeof connection_name is 'function'
+      callback = connection_name
+      connection_name = 'default'
+    
+    done = ->
+      caboose_model.emit('connected', connection_name, caboose_model.connections[connection_name])
+      callback(null, caboose_model.connections[connection_name])
+    
+    # already have connection, so return it
+    return done() if caboose_model.connections[connection_name]?
+    
+    return callback(new Error('No configuration found for caboose-model')) unless caboose_model.configs?
+    return callback(new Error("No configuration found for #{connection_name} connection")) unless caboose_model.configs[connection_name]?
+    
+    # if connection is pending, listen for the connection and return it
+    if caboose_model.connections_pending[connection_name]?
+      listener = (name, conn) ->
+        if name is connection_name
+          caboose_model.removeListener('connected', listener)
+          done()
+      return caboose_model.on('connected', listener)
+    
+    caboose_model.connections_pending[connection_name] = true
+    
+    conn = new Connection()
+    conn.open caboose_model.configs[connection_name], (err, c) ->
+      if err?
+        callback(err)
+      else
+        caboose_model.connections[connection_name] = c
+        done()
+      delete caboose_model.connections_pending[connection_name]

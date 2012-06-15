@@ -3,11 +3,15 @@ return module.exports = global['caboose-model'] if global['caboose-model']?
 _ = require 'underscore'
 async = require 'async'
 logger = Caboose.logger
+{EventEmitter} = require 'events'
 
-module.exports = global['caboose-model'] = caboose_model =
+class CabooseModel extends EventEmitter
   connections: {}
+  connections_pending: {}
 
-  create: (name) -> new caboose_model.Builder(name)
+  create: (name) ->
+    new caboose_model.Builder(name)
+
   configure: (config) ->
     @configs = {}
     if config.database? or config.url?
@@ -22,17 +26,10 @@ module.exports = global['caboose-model'] = caboose_model =
   # could be called multiple times until it works
   connect: (callback) ->
     return callback(new Error('No configuration found for caboose-model')) unless caboose_model.configs?
-    
-    a = _(caboose_model.configs).inject (o, v, k) ->
-      o[k] = (cb) ->
-        return cb(null, caboose_model.connections[k]) if caboose_model.connections[k]?
-        return cb(new Error("No configuration found for #{k} connection")) unless caboose_model.configs[k]?
-        conn = new caboose_model.Connection()
-        conn.open caboose_model.configs[k], (err, c) ->
-          return callback(err) if err?
-          caboose_model.connections[k] = c
-          cb(null, c)
-    , {}
+  
+    a = _.chain(caboose_model.configs).keys().inject((o, k) ->
+      o[k] = (cb) -> Connection.create(k, cb)
+    , {}).value()
     
     async.parallel(a, callback)
   
@@ -66,8 +63,8 @@ module.exports = global['caboose-model'] = caboose_model =
               model_file = files.filter((f) -> f.basename is name)
               model_file = if model_file.length > 0 then model_file[0] else null
               return null unless model_file?
-              return caboose_model.Compiler.compile(model_file) if model_file.extension is 'coffee'
-              model_file.require()
+              return {file: model_file, object: caboose_model.Compiler.compile(model_file)} if model_file.extension is 'coffee'
+              {file: model_file, object: model_file.require()}
             catch e
               console.error e.stack
         }
@@ -75,6 +72,8 @@ module.exports = global['caboose-model'] = caboose_model =
       if Caboose?.app?.config?['caboose-model']?
         caboose_model.configure Caboose.app.config['caboose-model']
   }
+
+module.exports = global['caboose-model'] = caboose_model = new CabooseModel()
 
 caboose_model.Builder = require './lib/builder'
 caboose_model.Compiler = require './lib/model_compiler'
