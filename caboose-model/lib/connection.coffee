@@ -49,7 +49,9 @@ module.exports = class Connection
       connection_name = 'default'
     
     done = ->
-      caboose_model.emit('connected', connection_name, caboose_model.connections[connection_name])
+      if caboose_model.connections_pending[connection_name]?
+        delete caboose_model.connections_pending[connection_name]
+        caboose_model.emit('connected', connection_name, caboose_model.connections[connection_name])
       callback(null, caboose_model.connections[connection_name])
     
     # already have connection, so return it
@@ -75,4 +77,3 @@ module.exports = class Connection
       else
         caboose_model.connections[connection_name] = c
         done()
-      delete caboose_model.connections_pending[connection_name]

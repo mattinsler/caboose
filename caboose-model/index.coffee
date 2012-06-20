@@ -74,7 +74,7 @@ class CabooseModel extends EventEmitter
   }
 
 module.exports = global['caboose-model'] = caboose_model = new CabooseModel()
-caboose_model.setMaxListeners(100)
+caboose_model.setMaxListeners(1000)
 
 caboose_model.Builder = require './lib/builder'
 caboose_model.Compiler = require './lib/model_compiler'
