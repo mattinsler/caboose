@@ -22,12 +22,15 @@ class FormBuilder
     @opts.as ?= 'data'
     
     @opts.path ?= @context.request.url
+    
+    @html_opts = _(@opts).clone()
+    delete @html_opts[k] for k in ['action', 'method', 'as', 'path']
 
   _field_name: (field) ->
     "#{@opts.as}[#{field}]"
     
   toString: ->
-    buf = [@context.form_tag(@opts.path, method: 'POST')]
+    buf = [@context.form_tag(@opts.path, _.extend({method: 'POST'}, @html_opts))]
     unless Caboose.app.config.controller?.csrf?.enabled is false
       buf.push(@context.hidden_field_tag('_csrf', @context.session._csrf))
     if @opts.method in ['PUT', 'DELETE']
@@ -42,19 +45,24 @@ class FormBuilder
     @context.label_tag(_(field).humanize(), _.extend({}, {for: @_field_name(field)}, options))
   
   text: (field, options) ->
-    @context.text_field_tag(@_field_name(field), @obj[field] || '', options)
+    field_name = @_field_name(field)
+    @context.text_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
   
   password: (field, options) ->
-    @context.password_field_tag(@_field_name(field), @obj[field] || '', options)
+    field_name = @_field_name(field)
+    @context.password_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
     
   textarea: (field, options) ->
-    @context.text_area_tag(@_field_name(field), @obj[field] || '', options)
+    field_name = @_field_name(field)
+    @context.text_area_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
   
   hidden: (field, options) ->
-    @context.hidden_field_tag(@_field_name(field), @obj[field] || '', options)
+    field_name = @_field_name(field)
+    @context.hidden_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
     
   select: (field, values, options) ->
-    @context.select_tag(@_field_name(field), @obj[field] || '', values, options)
+    field_name = @_field_name(field)
+    @context.select_tag(options.name || field_name, @obj[field] || '', values, _(id: field_name).extend(options))
   
   submit: (text, options) ->
     if typeof text isnt 'string'
