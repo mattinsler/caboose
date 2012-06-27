@@ -39,10 +39,10 @@ module.exports = class Path
   create_write_stream: ->
     fs.createWriteStream @path
   
-  mkdir: (mode = 0777, callback) ->
+  mkdir: (mode = 0o777, callback) ->
     fs.mkdir @path, mode, callback
   
-  mkdir_sync: (mode = 0777) ->
+  mkdir_sync: (mode = 0o777) ->
     fs.mkdirSync @path, mode
 
   readdir: (callback) ->

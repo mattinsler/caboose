@@ -14,8 +14,8 @@ exports.method = (project_name) ->
   logger.title "Creating a new Caboose project at #{base}"
 
   util.copy_dir template, base
-  package = util.read_package base
-  package.name = project_name
-  util.write_package package, base
+  pkg = util.read_package base
+  pkg.name = project_name
+  util.write_package pkg, base
 
   util.npm_install 'ejs', Caboose.root.join(project_name)
