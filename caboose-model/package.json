@@ -2,7 +2,7 @@
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose-model",
   "description": "Model system around MongoDB",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "repository": {
     "type": "git",
     "url": "git@github.com:mattinsler/caboose.git"
@@ -11,7 +11,7 @@
     "node": ">= 0.6.0"
   },
   "dependencies": {
-    "mongodb": "latest"
+    "mongodb": "git://github.com/mattinsler/node-mongodb-native.git"
   },
   "main": "index"
 }
