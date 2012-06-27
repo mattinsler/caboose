@@ -15,8 +15,11 @@ module.exports = class Path
     @basename = PATH.basename(@path, @extension)
     @extension = @extension.replace(/^\.+/, '')
     
+  @isPath: (candidate) ->
+    candidate.path? and candidate.dirname? and candidate.filename? and candidate.basename?
+    
   join: (subpaths...) ->
-    subpaths = subpaths.map (p) -> if p instanceof Path then p.path else p
+    subpaths = subpaths.map (p) -> if Path.isPath(p) then p.path else p
     new Path(PATH.join @path, subpaths...)
   
   toString: ->
@@ -96,7 +99,7 @@ module.exports = class Path
       return callback(err) if err?
       return callback(new Error("File #{src} does not exist.")) unless exists
     
-      dest = if to instanceof Path then to else new Path(to)
+      dest = if Path.isPath(to) then to else new Path(to)
       dest.exists (err, exists) ->
         return callback(err) if err?
         return callback(new Error("File #{to} already exists.")) if exists
@@ -107,7 +110,7 @@ module.exports = class Path
   
   copy_sync: (to) ->
     throw new Error("File #{@} does not exist.") unless @.exists_sync()
-    dest = if to instanceof Path then to else new Path(to)
+    dest = if Path.isPath(to) then to else new Path(to)
     throw new Error("File #{to} already exists.") if dest.exists_sync()
 
     dest.write_file_sync(@.read_file_sync())

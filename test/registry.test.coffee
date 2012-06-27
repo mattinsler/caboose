@@ -9,7 +9,7 @@ vows.describe('Registry')
   'split by capital':
     topic: -> registry.split 'ApplicationController'
     'should be an array': (o) ->
-      assert.isTrue (o instanceof Array)
+      assert.isTrue Array.isArray(o)
     'should have 2 parts': (o) ->
       assert.equal o.length, 2
     'should have split words': (o) ->
@@ -18,7 +18,7 @@ vows.describe('Registry')
   'split by underscore':
     topic: -> registry.split 'application_controller'
     'should be an array': (o) ->
-      assert.isTrue (o instanceof Array)
+      assert.isTrue Array.isArray(o)
     'should have 2 parts': (o) ->
       assert.equal o.length, 2
     'should have split words': (o) ->

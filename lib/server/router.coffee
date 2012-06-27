@@ -74,7 +74,7 @@ class ParamNode extends Node
   @create_matcher: (condition) ->
     return ((segment) -> true) unless condition?
     return ((segment) -> segment is condition) if typeof condition is 'string'
-    return ((segment) -> condition.test(segment)) if condition instanceof RegExp
+    return ((segment) -> condition.test(segment)) if (typeof condition is 'object' and Object::toString.call(condition) is '[object RegExp]')
     return ((segment) -> segment in condition) if Array.isArray(condition)
     return ((segment, req) -> condition(segment, req)) if typeof condition is 'function'
   

@@ -60,7 +60,7 @@ class ControllerCompiler extends Compiler
     @response
 
   @compile = (file) ->
-    file = new Path(file) unless file instanceof Path
+    file = new Path(file) unless Path.isPath(file)
     return null unless file.exists_sync()
     compiler = new ControllerCompiler()
     try

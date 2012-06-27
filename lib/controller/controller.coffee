@@ -43,13 +43,13 @@ class Controller
   not_found: (err) ->
     @_responder.respond {
       code: 404
-      content: if err instanceof Error then err else new Error(err)
+      content: if (typeof err is 'object' and Object::toString.call(err) is '[object Error]') then err else new Error(err)
     }
   
   unauthorized: (err) ->
     @_responder.respond {
       code: 401
-      content: if err instanceof Error then err else new Error(err)
+      content: if (typeof err is 'object' and Object::toString.call(err) is '[object Error]') then err else new Error(err)
     }
 
   error: (err) -> @_responder.next err

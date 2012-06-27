@@ -58,7 +58,7 @@ class ModelCompiler extends Compiler
 
   @compile = (file) ->
     # Caboose.logger.log "compiling #{file}"
-    file = new Path(file) unless file instanceof Path
+    file = new Path(file) unless Path.isPath(file)
     return null unless file.exists_sync()
     compiler = new ModelCompiler()
     try

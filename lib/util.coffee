@@ -5,7 +5,7 @@ logger = require './logger'
 _npm_install = (package_obj, root, callback) ->
   callback = root if typeof root is 'function'
   root ||= Caboose.root
-  root = new Path(root) unless root instanceof Path
+  root = new Path(root) unless Path.isPath(root)
   
   npm = require('npm')
   tmp_file = root.join(new Buffer(16).toString('hex') + '.tmp')
@@ -32,8 +32,8 @@ util = module.exports =
         d.mkdir_sync(mode)
 
   copy_dir: (from, to, options) ->
-    from = new Path(from) unless from instanceof Path
-    to = new Path(to) unless to instanceof Path
+    from = new Path(from) unless Path.isPath(from)
+    to = new Path(to) unless Path.isPath(to)
     util.mkdir(to)
     
     _copy_dir = (from, to) ->
@@ -54,7 +54,7 @@ util = module.exports =
     _copy_dir from, to
     
   create_file: (file_path, content, encoding = 'utf8') ->
-    file_path = new Path(file_path) unless file_path instanceof Path
+    file_path = new Path(file_path) unless Path.isPath(file_path)
     
     if file_path.exists_sync()
       logger.file_exists(file_path)
@@ -64,10 +64,10 @@ util = module.exports =
       file_path.write_file_sync content, encoding
   
   has_package: (root = Caboose.root) ->
-    (if root instanceof Path then root else new Path(root)).join('package.json').exists_sync()
+    (if Path.isPath(root) then root else new Path(root)).join('package.json').exists_sync()
   
   read_package: (root = Caboose.root) ->
-    root = new Path(root) unless root instanceof Path
+    root = new Path(root) unless Path.isPath(root)
     package_file = root.join('package.json')
     try
       JSON.parse(package_file.read_file_sync('utf8'))
@@ -75,7 +75,7 @@ util = module.exports =
       throw new Error("Had trouble reading or parsing #{package_file}")
   
   write_package: (data, root = Caboose.root) ->
-    root = new Path(root) unless root instanceof Path
+    root = new Path(root) unless Path.isPath(root)
     package_file = root.join('package.json')
     try
       logger.file_alter package_file
@@ -116,7 +116,7 @@ util = module.exports =
   npm_install: (package_name, root, callback) ->
     callback = root if typeof root is 'function'
     root ||= Caboose.root
-    root = new Path(root) unless root instanceof Path
+    root = new Path(root) unless Path.isPath(root)
     
     logger.title "Installing #{package_name}"
     done = (err) ->
