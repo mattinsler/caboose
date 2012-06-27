@@ -3,7 +3,7 @@ Responder = require './responder'
 
 class Controller
   constructor: (req, res, next) ->
-    Object.defineProperty @, '_responder', {value: new Responder(req, res, next)}
+    Object.defineProperty @, '_responder', {writable: true, value: new Responder(req, res, next)}
     @flash = @session?.flash ? {}
     # Object.defineProperty @, 'flash', {value: @session?.flash ? {}}
     delete @session.flash
