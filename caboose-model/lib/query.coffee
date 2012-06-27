@@ -2,8 +2,7 @@ _ = require 'underscore'
 
 module.exports = class Query
   constructor: (@model, @query) ->
-    @query ?= {}
-    @query._id = new @model.ObjectID(@query._id) if @query._id? and typeof @query._id is 'string' and /[0-9a-z]{24}/i.test(@query._id)
+    @query = @model.__fix_query__(@query ? {})
     @options = {}
 
   __error__: (promise, err) ->

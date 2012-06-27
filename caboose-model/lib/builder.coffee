@@ -2,7 +2,7 @@ Model = require './model'
 Query = require './query'
 Promise = Caboose.exports.promise
 
-build = ->
+build = (original_model) ->
   model = class extends Model
     constructor: ->
       super
@@ -26,7 +26,7 @@ build = ->
   field_names = ['Long', 'ObjectID', 'Timestamp', 'DBRef', 'Binary', 'Code']
   Object.defineProperty(model, fn, {value: Model[fn], enumerable: false}) for fn in field_names
   
-  plugin.build?.call(this, model) for plugin in Builder.plugins.reverse()
+  plugin.build?.call(this, model, original_model) for plugin in Builder.plugins.reverse()
 
   model
 
@@ -53,32 +53,30 @@ class Builder
             this
 
 Builder.plugins = [{
-  name: 'static'
-  initialize: -> Object.defineProperty @, '_statics', {value: {}, enumerable: false}
-  execute: (name, method) -> @_statics[name] = method
-  build: (model) ->
-    for k, v of @_statics
-      model[k] = v
+  # Static methods
+  build: (model, original_model) ->
+    for k in Object.keys(original_model) when k isnt '__super__' and typeof original_model[k] is 'function'
+      model[k] = original_model[k]
 }, {
-  name: 'instance'
-  initialize: -> Object.defineProperty @, '_instances', {value: {}, enumerable: false}
-  execute: (name, method) -> @_instances[name] = method
-  build: (model) ->
-    for k, v of @_instances
-      model::[k] = v
+  # Instance methods
+  build: (model, original_model) ->
+    for k in Object.keys(original_model::) when k isnt 'constructor' and typeof original_model::[k] is 'function'
+      model::[k] = original_model::[k]
 }, {
-  name: 'property'
-  initialize: -> Object.defineProperty @, '_properties', {value: {}, enumerable: false}
-  execute: (name, method) -> @_properties[name] = method
-  build: (model) ->
-    return if Object.keys(@_properties).length is 0
+  build: (model, original_model) ->
+    is_properties_object = (obj) ->
+      return false unless typeof obj is 'object'
+      for k in Object.keys(obj)
+        return false unless k in ['get', 'set'] and typeof obj[k] is 'function'
+      true
     
-    init = model::__init__
-    _properties = @_properties
-    model::__init__ = ->
-      init.apply(this, arguments)
-      for k, v of _properties
-        Object.defineProperty @, k, {get: v, enumerable: true}
+    for k in Object.keys(original_model::) when typeof k isnt 'function'
+      if is_properties_object(original_model::[k])
+        # Define getter/setter
+        original_model::[k].enumerable = true
+        Object.defineProperty(model::, k, original_model::[k])
+      else
+        model::[k] = original_model::[k]
 }, {
   name: 'before_save',
   initialize: -> Object.defineProperty @, '_before_saves', {value: [], enumerable: false}

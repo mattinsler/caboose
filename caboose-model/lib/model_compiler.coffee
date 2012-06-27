@@ -50,20 +50,11 @@ class ModelCompiler extends Compiler
     while require_call = /^\W*require\W+('([^']+)'|"([^"]+)")/.exec(@code)
       @code = @code.replace require_call[0], "#{require_call[2]} = require '#{require_call[2]}'"
 
-    # @apply_scope_plugins 'models'
-    # @apply_precompile_plugins 'models'
-
   postcompile: ->
-    return if @not_model
 
-    methods = Object.keys(@scope[@name]::).filter (k) -> k isnt 'constructor'
-    for method in methods
-      @builder.instance method, @scope[@name]::[method]
-    # @apply_postcompile_plugins 'models'
-  
   respond: ->
     return @scope[@name] if @not_model
-    @builder.build()
+    @builder.build(@scope[@name])
 
   @compile = (file) ->
     # Caboose.logger.log "compiling #{file}"
