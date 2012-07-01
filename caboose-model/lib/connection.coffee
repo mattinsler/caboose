@@ -41,6 +41,7 @@ url_parse = (url) ->
   {
     protocol: protocol
     host: host
+    port: port
     hosts: hosts
     path: path
     user: user
