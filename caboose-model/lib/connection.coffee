@@ -60,10 +60,8 @@ module.exports = class Connection
     options = @_parse_url(options.url) if options.url?
     
     if options.host?
-      console.log 'not repl set'
       server = new mongodb.Server(options.host, options.port ? 27017, auto_reconnect: true)
     else if options.hosts?
-      console.log 'repl set'
       server = new mongodb.ReplSetServers(options.hosts.map((h) ->
         new mongodb.Server(h.host, h.port ? 27017, auto_reconnect: true)
       ), options.query)
