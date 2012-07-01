@@ -3,28 +3,76 @@ mongodb = require 'mongodb'
 Model = require './model'
 caboose_model = require '../index'
 
-module.exports = class Connection
-  _parse_options: (conn_string) ->
-    uri = require('url').parse conn_string
-    options = {
-      host: uri.hostname
-      port: parseInt(uri.port) ? 27017
-      database: uri.pathname.replace /\//g, ''
-    }
-    if uri.auth?
-      [options.user, options.password] = uri.auth.split ':'
-    options
+type_parse = (value) ->
+  return parseInt(value) if parseInt(value).toString() is value
+  return parseFloat(value) if parseFloat(value).toString() is value
+  return true if value.toLowerCase() is 'true'
+  return false if value.toLowerCase() is 'false'
+  return null if value.toLowerCase() is 'null'
+  return undefined if value.toLowerCase() is 'undefined'
+  value
+
+url_parse = (url) ->
+  [_x, protocol, _x, auth, host, path, query] = /([^:]+):\/\/(([^:]+:[^@]+)@)?([^\/]+)(\/[^?]+)?(\?.+)?/.exec(url)
+  if host.indexOf(',') >= 0
+    hosts = host.split(',').map (h) ->
+      [h, p] = h.split(':')
+      p = parseInt(p) if p
+      {host: h, port: p}
+    host = null
+  else
+    [h, p] = host.split(':')
+    p = parseInt(p) if p?
+    host = h
+    port = p
   
+  if query?
+    q = {}
+    for kv in query.replace(/^\?/, '').split('&')
+      [k, v] = kv.split('=')
+      k = decodeURIComponent(k)
+      v = type_parse(decodeURIComponent(v))
+      
+      q[k] = v
+    query = q
+  
+  [user, password] = auth.split(':') if auth?
+  
+  {
+    protocol: protocol
+    host: host
+    hosts: hosts
+    path: path
+    user: user
+    password: password
+    query: query
+  }
+
+module.exports = class Connection
+  _parse_url: (conn_string) ->
+    uri = url_parse(conn_string)
+    uri.database = uri.path.replace(/\//g, '')
+    uri
+
   open: (options, callback) ->
-    return callback null, @db if @db?
+    return(callback null, @db) if @db?
     
-    options = @_parse_options(options.url) if options.url?
+    options = @_parse_url(options.url) if options.url?
     
-    if not @db
+    if options.host?
+      console.log 'not repl set'
+      server = new mongodb.Server(options.host, options.port ? 27017, auto_reconnect: true)
+    else if options.hosts?
+      console.log 'repl set'
+      server = new mongodb.ReplSetServers(options.hosts.map((h) ->
+        new mongodb.Server(h.host, h.port ? 27017, auto_reconnect: true)
+      ), options.query)
+    
+    unless @db?
       try
-        @db = new mongodb.Db options.database, new mongodb.Server(options.host, options.port), native_parser: true
+        @db = new mongodb.Db(options.database, server, native_parser: true)
       catch e
-        @db = new mongodb.Db options.database, new mongodb.Server(options.host, options.port)
+        @db = new mongodb.Db(options.database, server, override_used_flag: true)
       
     @db.open (err, db) =>
       # console.error(if err.stack? then err.stack else util.inspect(err, true, 5)) if err?
