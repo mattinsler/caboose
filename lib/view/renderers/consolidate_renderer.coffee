@@ -70,7 +70,7 @@ module.exports = (opts, callback) ->
   locals = _.extend({partial: render_partial}, DEFAULT_HELPERS, controller._helpers, controller)
   # console.log locals
 
-  view_file = ViewResolver.resolve_view(controller._short_name, view, 'html')
+  view_file = ViewResolver.resolve_view(controller._short_name, view, controller.params.format || 'html')
   return callback(new Error("No view found for #{controller._short_name}##{view}.html")) unless view?
   render_view view_file.extension, view_file.path, locals, (err, text) ->
     return done(err, text) if err? or (options?.layout? and !options.layout)

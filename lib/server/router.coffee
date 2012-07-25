@@ -103,7 +103,7 @@ class Configurator
     _.extend(options, @options) if @options?
 
     node = @root
-    path_segments = ((@options?.base_path || '') + '/' + path).split('/').filter((s) -> s isnt '')
+    path_segments = ((@options?.base_path || '') + "/#{path}").split('/').filter((s) -> s isnt '')
 
     for segment in path_segments
       if segment[0] is ':'
@@ -131,6 +131,8 @@ class Configurator
     options ||= {}
     options.controller ||= path
     
+    path = path.replace(/(^\/+|\/+$)/g, '')
+    
     @route path, "#{options.controller}#index"
     @route "#{path}/new", "#{options.controller}#new"
     @route "post #{path}", "#{options.controller}#create"
@@ -140,11 +142,11 @@ class Configurator
     @route "delete #{path}/:id", "#{options.controller}#destroy"
 
     if routing_method?
-      options = _.extend({}, @options, {base_path: (@options?.base_path || '') + "#{path}/:#{path}_id"})
+      options = _.extend({}, @options, {base_path: (@options?.base_path || '') + "/#{path}/:#{path}_id"})
       routing_method.call(new Configurator(@root, options))
     
   namespace: (path, routing_method) ->
-    options = _.extend({}, @options, {base_path: (@options?.base_path || '') + path})
+    options = _.extend({}, @options, {base_path: (@options?.base_path || '') + "/#{path}"})
     routing_method.call(new Configurator(@root, options))
   
   domain: (domain, routing_method) ->

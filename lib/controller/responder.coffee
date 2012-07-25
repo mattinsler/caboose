@@ -44,7 +44,7 @@ class Responder
     content_type = mime.lookup(@req.params.format)
     View.render content_type, opts, (err, content) =>
       return @next(err) if err?
-      @res.contentType(content_type)
+      @res.header('Content-Type', content_type)
       @res.send(content, opts.code)
 
 module.exports = Responder

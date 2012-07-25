@@ -24,6 +24,7 @@ View = {
 
 View.register_renderer 'html', require './renderers/consolidate_renderer'
 View.register_renderer 'txt', require './renderers/consolidate_renderer'
+View.register_renderer 'js', require './renderers/consolidate_renderer'
 View.register_renderer 'json', require './renderers/json_renderer'
 
 module.exports = View

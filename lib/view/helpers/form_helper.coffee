@@ -79,4 +79,7 @@ module.exports = {
 
   csrf_tag: ->
     @hidden_field_tag('_csrf', @session._csrf)
+  
+  csrf_value: ->
+    @session._csrf
 }
