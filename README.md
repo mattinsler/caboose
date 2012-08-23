@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/mattinsler/caboose.png)](http://travis-ci.org/mattinsler/caboose)
 # Caboose
 
 A [coffeescript](http://coffeescript.org)-happy [express](http://expressjs.com/)-based server-side MVC framework based on [Rails](http://rubyonrails.org/)
