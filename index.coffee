@@ -20,8 +20,10 @@ node_path[p] = true for p in process.env.NODE_PATH.split(':') if process.env.NOD
 unless node_path[node_modules[0]]? and node_path[node_modules[1]]?
   node_path[node_modules[0]] = true
   node_path[node_modules[1]] = true
-  cmd = "NODE_PATH=#{Object.keys(node_path).join(':')} #{exec_path} #{process.argv.slice(2).join(' ')}"
-  require('kexec') cmd
+  
+  process.env.NODE_PATH = Object.keys(node_path).join(':')
+  require('module').Module._cache = {}
+  require('module').Module._initPaths()
 
 Application = require './lib/application'
 

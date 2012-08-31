@@ -2,7 +2,7 @@
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose",
   "description": "Rails-ish MVC Framework in Coffeescript",
-  "version": "0.1.51",
+  "version": "0.1.52",
   "repository": {
     "type": "git",
     "url": "git@github.com:mattinsler/caboose.git"
@@ -22,7 +22,6 @@
     "underscore.string": "2.2.0rc",
     "consolidate": "0.3.0",
     "npm": "1.1.21",
-    "kexec": "0.0.3",
     "yaml": "0.2.3",
     "mime": "1.2.5",
     "async": "0.1.18"
