@@ -34,7 +34,17 @@ if not global.Caboose?
     env: process.env.CABOOSE_ENV ? 'development'
     get: -> Caboose.registry.get(arguments...)
     argv: process.argv.slice()
+    versions: {}
   }
+  [major, minor, patch] = process.versions.node.split('.')
+  Caboose.versions.node = {major: parseInt(major), minor: parseInt(minor), patch: parseInt(patch)}
+  try
+    caboose_package = require('caboose/package')
+    [major, minor, patch] = caboose_package.version.split('.')
+    Caboose.versions.caboose = {major: parseInt(major), minor: parseInt(minor), patch: parseInt(patch)}
+  catch e
+    # nerf
+  
   Caboose.command = Caboose.argv.slice(2)[0]
   Caboose.arguments = Caboose.argv.slice(3)
   Caboose.path = {

@@ -4,7 +4,14 @@ exports.description = 'Open a console with the environment loaded'
 
 exports.method = ->
   repl = require 'repl'
-  context = repl.start().context
+  if Caboose.versions.node.minor is 6
+    context = repl.start().context
+  else if Caboose.versions.node.minor is 8
+    context = repl.start({
+      prompt: "caboose:#{Caboose.app.name}> "
+      useColors: true
+    }).context
+  
   context.$_ = -> console.log(arguments)
   if Caboose.app?.models?
     for m in Caboose.app.models
