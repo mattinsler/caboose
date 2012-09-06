@@ -30,7 +30,11 @@ class Model
       callback @__collection__
   
   @__fix_query__: (query) ->
-    query._id = new @ObjectID(query._id) if query._id? and typeof query._id is 'string' and /[0-9a-z]{24}/i.test(query._id)
+    if Array.isArray(query)
+      for q in query
+        q._id = new @ObjectID(q._id) if q._id? and typeof q._id is 'string' and /[0-9a-z]{24}/i.test(q._id)
+    else
+      query._id = new @ObjectID(query._id) if query._id? and typeof query._id is 'string' and /[0-9a-z]{24}/i.test(query._id)
     query
   
   @first: (callback) ->
@@ -71,7 +75,7 @@ class Model
           c.save doc, {safe: true}, (err) ->
             callback(err, doc)
         else
-          c.save doc
+          c.save(doc)
 
       index = 0
       next = (err) =>
@@ -86,7 +90,7 @@ class Model
     options or= {}
     options.safe = true if callback?
     @__ensure_collection__ (c) ->
-      c.update query, update, options, callback
+      c.update(query, update, options, callback)
 
   @update_multi: (query, update, callback) ->
     query = @__fix_query__(query)
@@ -118,6 +122,10 @@ class Model
         model.__type__ = model
         model.__collection__ = collection
         callback(null, model)
+  
+  @aggregate: (pipeline, callback) ->
+    @__ensure_collection__ (c) =>
+      c.aggregate(pipeline, callback)
 
 Object.defineProperty(Model, '__ensure_collection__', {enumerable: false})
 

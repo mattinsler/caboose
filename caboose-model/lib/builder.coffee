@@ -55,15 +55,22 @@ class Builder
 Builder.plugins = [{
   # Static methods
   build: (model, original_model) ->
+    return unless original_model?
+    
     for k in Object.keys(original_model) when k isnt '__super__' and typeof original_model[k] is 'function'
       model[k] = original_model[k]
 }, {
   # Instance methods
   build: (model, original_model) ->
+    return unless original_model?
+    
     for k in Object.keys(original_model::) when k isnt 'constructor' and typeof original_model::[k] is 'function'
       model::[k] = original_model::[k]
 }, {
+  # Getters and Setters
   build: (model, original_model) ->
+    return unless original_model?
+    
     is_properties_object = (obj) ->
       return false unless typeof obj is 'object'
       for k in Object.keys(obj)
