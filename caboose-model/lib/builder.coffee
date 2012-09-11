@@ -7,13 +7,16 @@ build = (original_model) ->
     constructor: ->
       super
       @__init__()
+      original_model::constructor.apply(@, arguments)
   
   Object.defineProperty model, '__super__', {enumerable: false}
   Object.defineProperty model, '__Query__', {value: class extends Query, enumerable: false}
   Object.defineProperty model, '__Promise__', {value: class extends Promise, enumerable: false}
 
+  initializers = @_initializers
   model::__init__ = ->
     Object.defineProperty @, '__type__', {value: model, enumerable: false}
+    i.call(@) for i in initializers
   
   # non-enumerable Model properties
   for prop in ['__ensure_collection__']
@@ -40,6 +43,8 @@ class Builder
   constructor: (name) ->
     Object.defineProperty @, 'name', {value: name, enumerable: false}
     Object.defineProperty @, 'short_name', {value: Caboose.registry.split(@name).join('_'), enumerable: false}
+    # support for initializers
+    Object.defineProperty @, '_initializers', {value: [], enumerable: false}
     
     plugin.initialize?.apply(this) for plugin in Builder.plugins
     
@@ -76,14 +81,33 @@ Builder.plugins = [{
       for k in Object.keys(obj)
         return false unless k in ['get', 'set'] and typeof obj[k] is 'function'
       true
-    
+
     for k in Object.keys(original_model::) when typeof k isnt 'function'
-      if is_properties_object(original_model::[k])
-        # Define getter/setter
-        original_model::[k].enumerable = true
-        Object.defineProperty(model::, k, original_model::[k])
-      else
-        model::[k] = original_model::[k]
+      do (k) =>
+        if is_properties_object(original_model::[k])
+          # define everything at initialization
+          @_initializers.push ->
+            Object.defineProperty(@, '__values__', {enumerable: false, value: {}}) unless @.__values__?
+            
+            if @[k]?
+              @__values__[k] = @[k]
+              delete @[k]
+            
+            opts = {enumerable: true}
+            
+            if original_model::[k].set?
+              opts.set = (value) -> @__values__[k] = original_model::[k].set.call(@, value)
+            else
+              opts.set = (value) -> @__values__[k] = value
+
+            if original_model::[k].get?
+              opts.get = -> original_model::[k].get.call(@, @__values__[k])
+            else
+              opts.get = -> @__values__[k]
+            
+            Object.defineProperty(@, k, opts)
+        else
+          model::[k] = original_model::[k]
 }, {
   name: 'before_save',
   initialize: -> Object.defineProperty @, '_before_saves', {value: [], enumerable: false}
