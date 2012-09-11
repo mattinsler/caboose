@@ -3,9 +3,13 @@ Responder = require './responder'
 
 class Controller
   constructor: (req, res, next) ->
-    Object.defineProperty @, '_responder', {writable: true, value: new Responder(req, res, next)}
-    @flash = @session?.flash ? {}
-    # Object.defineProperty @, 'flash', {value: @session?.flash ? {}}
+    # protect against being called twice...  this happened when the generated javascript syntax changed
+    return if @__initialized__
+    Object.defineProperty(@, '__initialized__', {enumerable: false, value: true})
+    Object.defineProperty(@, '_responder', {writable: true, value: new Responder(req, res, next)})
+    
+    @flash = @session?.flash
+    @flash = req.flash() if !@flash? or @flash is {}
     delete @session.flash
   
   @after: (method_name, callback) ->

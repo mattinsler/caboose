@@ -2,6 +2,8 @@ fs = require 'fs'
 util = require 'util'
 PATH = require 'path'
 
+_ = require 'underscore'
+
 module.exports = class Path
   constructor: (path = process.cwd()) ->
     @path = PATH.normalize(path.toString())
@@ -124,3 +126,25 @@ module.exports = class Path
   
   is_absolute: ->
     @path[0] is '/'
+  
+  ls_sync: (opts = {}) ->
+    opts.filter ?= -> true
+    if opts.extensions
+      ext = _(opts.extensions).inject ((o, e) -> o[e] = 1; o), {}
+      _filter = opts.filter
+      opts.filter = (p) ->
+        return false unless ext[p.extension]?
+        _filter(p)
+      delete opts.extensions
+    
+    files = @readdir_sync()
+    
+    if opts.recursive
+      sub_files = _.chain(files).collect (f) ->
+        f.ls_sync(opts) if f.is_directory_sync()
+      .flatten()
+      .compact()
+      .value()
+      Array::push.apply(files, sub_files)
+    
+    files.filter(opts.filter)

@@ -191,6 +191,7 @@ module.exports = class Router
       return next() unless route?
 
       req.params.format = last.split('.')[1..].join('.') if last?.split('.')[1..].length > 0
+      
       route.respond(req, res, next)
     catch e
       console.error(e.stack) if e?

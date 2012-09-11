@@ -3,17 +3,15 @@ async = require 'async'
 Controller = require './controller'
 
 build = ->
-  __constructor__ = @_actions.constructor
-  rx = new RegExp("^\\s*function\\s+#{@name}\\s*\\(\\)\\s*{\\s*#{@name}\\.__super__\\.constructor\\.apply\\(this,\\s*arguments\\);\\s*}\\s*$")
-  
   base_controller = (if @extends? then Caboose.registry.get(@extends) else null) || Controller
   
+  
+  __constructor__ = @_actions.constructor
   # Default constructor
-  if rx.test(__constructor__.toString().replace(/[ \t\r\n]+/g,' '))
-    controller = class extends base_controller
-  else
-    controller = class extends base_controller
-      constructor: __constructor__
+  controller = class extends base_controller
+    constructor: ->
+      super
+      __constructor__.apply(@, arguments)
   
   controller.after = Controller.after
   controller.before = Controller.before

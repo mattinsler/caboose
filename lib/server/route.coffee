@@ -18,6 +18,6 @@ class Route
     return next(new Error("Could not find #{@options.controller}_controller")) unless ControllerType?
 
     controller = new ControllerType(req, res, next)
-    controller._execute @options.action
+    controller._execute(@options.action)
 
 module.exports = Route

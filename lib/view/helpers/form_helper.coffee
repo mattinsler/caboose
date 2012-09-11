@@ -41,37 +41,37 @@ class FormBuilder
     @ended = true
     @context.form_tag_end()
   
-  label: (field, options) ->
+  label: (field, options = {}) ->
     @context.label_tag(_(field).humanize(), _.extend({}, {for: @_field_name(field)}, options))
   
-  text: (field, options) ->
+  text: (field, options = {}) ->
     field_name = @_field_name(field)
     @context.text_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
   
-  password: (field, options) ->
+  password: (field, options = {}) ->
     field_name = @_field_name(field)
     @context.password_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
     
-  textarea: (field, options) ->
+  textarea: (field, options = {}) ->
     field_name = @_field_name(field)
     @context.text_area_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
   
-  hidden: (field, options) ->
+  hidden: (field, options = {}) ->
     field_name = @_field_name(field)
     @context.hidden_field_tag(options.name || field_name, @obj[field] || '', _(id: field_name).extend(options))
     
-  select: (field, values, options) ->
+  select: (field, values, options = {}) ->
     field_name = @_field_name(field)
     @context.select_tag(options.name || field_name, @obj[field] || '', values, _(id: field_name).extend(options))
   
-  submit: (text, options) ->
+  submit: (text, options = {}) ->
     if typeof text isnt 'string'
       options = text
       text = null
     @context.submit_tag(text, options)
 
 module.exports = {
-  form_for: (obj, opts) ->
+  form_for: (obj, opts = {}) ->
     unless opts?
       opts = obj
       obj = {}
