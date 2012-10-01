@@ -38,7 +38,7 @@ class Responder
     @set_headers opts.options
     
     status_class = Math.floor(opts.code / 100)
-    return @res.redirect(opts.content, opts.code) if status_class is 3
+    return @res.redirect(opts.code, opts.content) if status_class is 3
     return @res.send(opts.content, opts.code) if opts.content?
     
     content_type = mime.lookup(@req.params.format)
