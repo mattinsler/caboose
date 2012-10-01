@@ -10,18 +10,18 @@
   "dependencies": {
     "colors": "0.6.0-1",
     "coffee-script": "1.3.3",
-    "connect": "2.2.2",
-    "express": "3.0.0rc4",
+    "connect": "latest",
+    "express": "latest",
     "cliff": "0.1.7",
     "switchback": "0.2.0",
     "mailer": "0.6.7",
-    "underscore": "1.3.3",
-    "underscore.string": "2.2.0rc",
-    "consolidate": "0.3.0",
-    "npm": "1.1.21",
+    "underscore": "latest",
+    "underscore.string": "latest",
+    "consolidate": "latest",
+    "npm": "latest",
     "yaml": "0.2.3",
-    "mime": "1.2.5",
-    "async": "0.1.18"
+    "mime": "latest",
+    "async": "latest"
   },
   "devDependencies": {
     "vows": "0.6.2"
