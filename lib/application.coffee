@@ -112,7 +112,7 @@ module.exports = class Application
   boot: (callback) ->
     return callback() if not @config.http.enabled
     @_apply_before 'boot'
-    @http = express.createServer()
+    @http = express()
     
     middleware = Caboose.path.config.join('middleware').require()
     middleware @http
@@ -122,12 +122,12 @@ module.exports = class Application
     else
       @http.use express.errorHandler(showStack: true, dumpExceptions: true)
     
-    @http.listen(@config.http.port)
-    throw new Error("Could not listen on port #{@config.http.port}") unless @http.address()
+    @raw_http = @http.listen(@config.http.port)
+    throw new Error("Could not listen on port #{@config.http.port}") unless @raw_http.address()
 
     @_apply_after 'boot'
 
     callback()
 
   address: ->
-    @http.address()
+    @raw_http.address()
