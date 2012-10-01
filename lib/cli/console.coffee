@@ -15,7 +15,10 @@ exports.method = ->
   context.$_ = -> console.log(arguments)
   if Caboose.app?.models?
     for m in Caboose.app.models
-      name = if m.__name__? then m.__name__ else /function ([^\(]+)/.exec(m.toString())[1]
+      name = m.__name__
+      unless name?
+        parsed = /function ([^\(]+)/.exec(m.toString())
+        name = parsed[1] if parsed?
       context[name] = m
   
   for file in Caboose.path.controllers.readdir_sync()
