@@ -63,6 +63,9 @@ module.exports = class Path
   
   readlink_sync: ->
     fs.readlinkSync @path
+  
+  read_file: (encoding = undefined, callback) ->
+    fs.readFile(@path, encoding, callback)
 
   read_file_sync: (encoding = undefined) ->
     fs.readFileSync @path, encoding

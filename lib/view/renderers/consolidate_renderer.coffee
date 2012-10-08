@@ -3,9 +3,12 @@ Path = require '../../path'
 consolidate = require 'consolidate'
 ViewResolver = require '../view_resolver'
 
-render_view = (engine, view_path, local_data, callback) ->
+render_view = (view_file, local_data, callback) ->
+  return view_file.read_file('utf8', callback) if view_file.basename.indexOf('.') is -1
+  
+  engine = view_file.extension
   try
-    consolidate[engine] view_path, local_data, callback
+    consolidate[engine] view_file.path, local_data, callback
   catch err
     console.error "The #{engine} view engine is not installed. To fix this, run 'caboose view-engine install #{engine}'" if err.message is "Cannot find module '#{engine}'"
     callback(err)
@@ -57,12 +60,12 @@ module.exports = (opts, callback) ->
       partial_data.forEach (item, idx) ->
         partial_array_locals = _.extend({}, partial_locals)
         partial_array_locals[partial_var] = item
-        render_view partial_view.extension, partial_view.path, partial_array_locals, (err, partial_text) ->
+        render_view partial_view, partial_array_locals, (err, partial_text) ->
           return done(err) if err?
           array_data[idx] = partial_text
           array_done()
     else
-      render_view partial_view.extension, partial_view.path, partial_locals, (err, partial_text) ->
+      render_view partial_view, partial_locals, (err, partial_text) ->
         done(err, partial_text, partial_key)
 
     partial_key
@@ -72,11 +75,11 @@ module.exports = (opts, callback) ->
 
   view_file = ViewResolver.resolve_view(controller._short_name, view, controller.params.format || 'html')
   return callback(new Error("No view found for #{controller._short_name}##{view}.html")) unless view?
-  render_view view_file.extension, view_file.path, locals, (err, text) ->
+  render_view view_file, locals, (err, text) ->
     return done(err, text) if err? or (options?.layout? and !options.layout)
 
     layout = ViewResolver.resolve_layout(options?.layout || controller, controller.params.format)
     return done(err, text) unless layout?
 
     locals.yield = -> text
-    render_view layout.extension, layout.path, locals, done
+    render_view layout, locals, done
