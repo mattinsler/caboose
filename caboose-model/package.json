@@ -2,7 +2,7 @@
   "author": "Matt Insler <matt.insler@gmail.com> (www.mattinsler.com)",
   "name": "caboose-model",
   "description": "Model system around MongoDB",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "repository": {
     "type": "git",
     "url": "git@github.com:mattinsler/caboose.git"

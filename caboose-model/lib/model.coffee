@@ -32,9 +32,9 @@ class Model
   @__fix_query__: (query) ->
     if Array.isArray(query)
       for q in query
-        q._id = new @ObjectID(q._id) if q._id? and typeof q._id is 'string' and /[0-9a-f]{24}/i.test(q._id)
+        q._id = new @ObjectID(q._id) if q._id? and typeof q._id is 'string' and /^[0-9a-f]{24}$/i.test(q._id)
     else
-      query._id = new @ObjectID(query._id) if query._id? and typeof query._id is 'string' and /[0-9a-f]{24}/i.test(query._id)
+      query._id = new @ObjectID(query._id) if query._id? and typeof query._id is 'string' and /^[0-9a-f]{24}$/i.test(query._id)
     query
   
   @first: (callback) ->
