@@ -1,8 +1,0 @@
-<h3><%- link_to(post.title, '/posts/' + post._id) %></h3>
-<p><%= post.content %></p>
-<p class="meta">
-  <% if (post.user_id) { %>
-    <%- link_to(post.user_id, '/users/' + post.user_id + '/posts') %> -
-  <% } %>
-  Posted at <time><%= post.created_at.format('MMM D, YYYY') %></time>
-</p>

@@ -98,10 +98,10 @@ module.exports = class Application
       @plugins.initialize()
       @run_initializers (err) =>
         if err?
-          console.error err.stack
-          process.exit 1
+          console.error(err.stack)
+          process.exit(1)
         
-        @_apply_after 'initialize'
+        @_apply_after('initialize')
         @_state.initialized = true
         delete @_state.initializing
         
