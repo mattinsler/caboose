@@ -15,7 +15,7 @@ npm install caboose
 ## Getting Started
 
 ```bash
-$ caboose new app_name
+$ caboose create app_name
 $ cd app_name
 $ npm install
 $ caboose server
