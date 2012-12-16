@@ -122,12 +122,12 @@ module.exports = class Application
     else
       @http.use express.errorHandler(showStack: true, dumpExceptions: true)
     
-    @raw_http = @http.listen(@config.http.port)
-    throw new Error("Could not listen on port #{@config.http.port}") unless @raw_http.address()
+    @raw_http = @http.listen @config.http.port, =>
+      throw new Error("Could not listen on port #{@config.http.port}") unless @raw_http.address()
 
-    @_apply_after 'boot'
+      @_apply_after 'boot'
 
-    callback()
+      callback()
 
   address: ->
     @raw_http.address()
