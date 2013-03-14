@@ -91,17 +91,17 @@ class Configurator
 
   route: (path, opts) ->
     if typeof opts is 'string'
-      options = arguments[2] || {}
+      options = _(arguments[2] || {}).clone()
       [nothing, options.controller, nothing, options.action] = /^([^#]+)(#(.+))?$/.exec(opts)
     else
-      options = opts
+      options = _(opts).clone()
     [nothing, nothing, options.method, path] = /^(([^ ]+) +)?([^ ]+)$/.exec(path)
 
     options.method = (options.method || 'get').toUpperCase()
     options.action ?= 'index'
     options.controller ?= path
-    _.extend(options, @options) if @options?
-
+    _(options).extend(@options) if @options?
+    
     node = @root
     path_segments = ((@options?.base_path || '') + "/#{path}").split('/').filter((s) -> s isnt '')
 
@@ -122,27 +122,39 @@ class Configurator
     node.methods[options.method] = [] unless node.methods[options.method]?
     node.methods[options.method].push {route: new Route(options), conditions: conditions}
   
-  resources: (path, options, routing_method) ->
-    if typeof options is 'function'
-      routing_method = options
-      options = {}
-    if typeof options is 'string'
-      options = {controller: options}
-    options ||= {}
-    options.controller ||= path
+  # @resources 'foo', ->
+  # @resources 'foo', 'api_foo', ->
+  # @resources 'foo', {foo: 'bar'}, ->
+  # @resources 'foo', 'api_foo', {foo: 'bar'}, ->
+  resources: (path, controller, opts, routing_method) ->
+    if typeof controller is 'function'
+      routing_method = controller
+      controller = path
+      opts = {}
+    if typeof opts is 'function'
+      routing_method = opts
+      opts = {}
+    if typeof controller isnt 'string'
+      opts = controller or {}
+      controller = opts.controller or path
+    opts ?= {}
     
     path = path.replace(/(^\/+|\/+$)/g, '')
+    id_field = opts.rename_id_to ? 'id'
+    child_id_field = opts.rename_id_to ? "#{path}_id"
     
-    @route path, "#{options.controller}#index"
-    @route "#{path}/new", "#{options.controller}#new"
-    @route "post #{path}", "#{options.controller}#create"
-    @route "#{path}/:id", "#{options.controller}#show"
-    @route "#{path}/:id/edit", "#{options.controller}#edit"
-    @route "put #{path}/:id", "#{options.controller}#update"
-    @route "delete #{path}/:id", "#{options.controller}#destroy"
+    route_opts = _(opts).omit('method', 'action', 'controller', 'rename_id_to')
+    
+    @route path, "#{controller}#index", route_opts
+    @route "#{path}/new", "#{controller}#new", route_opts
+    @route "post #{path}", "#{controller}#create", route_opts
+    @route "#{path}/:#{id_field}", "#{controller}#show", route_opts
+    @route "#{path}/:#{id_field}/edit", "#{controller}#edit", route_opts
+    @route "put #{path}/:#{id_field}", "#{controller}#update", route_opts
+    @route "delete #{path}/:#{id_field}", "#{controller}#destroy", route_opts
 
     if routing_method?
-      options = _.extend({}, @options, {base_path: (@options?.base_path || '') + "/#{path}/:#{path}_id"})
+      options = _.extend({}, opts, {base_path: (@options?.base_path || '') + "/#{path}/:#{child_id_field}"})
       routing_method.call(new Configurator(@root, options))
     
   namespace: (path, routing_method) ->

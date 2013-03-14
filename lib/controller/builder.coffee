@@ -64,15 +64,29 @@ class Builder
             plugin.execute.apply(this, arguments)
             this
 
-create_filter_object = (filter, options) ->
-  options = filter if !options? and typeof filter is 'object'
-  options = {only: null, except: null} unless options?
+create_filter_objects = (filter, options) ->
+  args = Array::slice.call(arguments)
+  last = _(args).last()
+  if typeof last is 'string'
+    filters = args
+    options = {}
+  else if Array.isArray(filter)
+    throw new Error('Cannot mix string and arrays in filter list') if args.length > 1 and (typeof args[1] is 'string' or Array.isArray(args[1]))
+    filters = filter
+    options ?= {}
+  else
+    filters = args[..-2]
+    options = last or {}
+  
   options.only = if options.only? then (if Array.isArray(options.only) then options.only else [options.only]) else null
   options.except = if options.except? then (if Array.isArray(options.except) then options.except else [options.except]) else null
-  options.method ?= filter
-  throw new Error('Filters must specify a method') unless options.method?
   throw new Error('Filters can have either an only or except option') if options.only? and options.except?
-  options
+  
+  return [options] if options.method? and filters.length is 0
+  
+  throw new Error('Filters must specify a method') if filters.length is 0
+  
+  filters.map (filter) -> _({method: filter}).extend(options)
 
 construct_inherited_list = (controller, name) ->
   # c = controller
@@ -133,7 +147,7 @@ Builder.add_plugin 'action',
 Builder.add_plugin 'before_action',
   name: 'before_action'
   initialize: -> Object.defineProperty @, '_before_actions', {value: [], enumerable: false}
-  execute: (filter, options) -> @_before_actions.push(create_filter_object(filter, options))
+  execute: (filter, options) -> @_before_actions.push(create_filter_objects(filter, options)...)
   build: (controller) ->
     controller::_before_actions = @_before_actions
     controller.before '_execute', (next, action) ->
