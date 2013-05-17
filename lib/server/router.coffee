@@ -154,7 +154,7 @@ class Configurator
     @route "delete #{path}/:#{id_field}", "#{controller}#destroy", route_opts
 
     if routing_method?
-      options = _.extend({}, opts, {base_path: (@options?.base_path || '') + "/#{path}/:#{child_id_field}"})
+      options = _.extend({}, @options, opts, {base_path: (@options?.base_path || '') + "/#{path}/:#{child_id_field}"})
       routing_method.call(new Configurator(@root, options))
     
   namespace: (path, routing_method) ->
