@@ -11,6 +11,12 @@ class Controller
     @flash = @session?.flash
     @flash = req.flash() if !@flash? or @flash is {}
     delete @session.flash
+    
+    @respond_with.callback = (err, data) =>
+      @respond_with(err ? data)
+    @respond_with.callback_with_fields = (fields) =>
+      (err, data) =>
+        @respond_with(err ? data, fields)
   
   @after: (method_name, callback) ->
     Object.defineProperty(@, '_after', enumerable: false, value: {}) unless @_after?
@@ -82,7 +88,62 @@ class Controller
       view: view
       options: options
     }
+  
+  respond_json: (code, obj) ->
+    @set_headers('Content-Type': 'application/json')
+    @respond(code: code, content: JSON.stringify(obj))
+  
+  respond_with: (promise_or_data, fields) ->
+    is_error = (e) ->
+      proto = e.__proto__
+      while proto? and proto isnt Object.prototype
+        return true if proto.toString() is Error.prototype.toString()
+        proto = proto.__proto__
+      false
     
+    respond = (err, data) =>
+      return @respond_json(500, {error: err.message}) if err?
+      return @respond_json(404, 'Not Found') unless data?
+
+      extract = (data, field) ->
+        if Array.isArray(data)
+          _(data).pluck(field)
+        else
+          _([data]).pluck(field)[0]
+
+      only = (data, list) ->
+        list = list.split(',') unless Array.isArray(list)
+        if Array.isArray(data)
+          data.map (d) -> _(d).pick(list)
+        else
+          _([data]).pluck(list)[0]
+
+      except = (data, list) ->
+        list = list.split(',') unless Array.isArray(list)
+        if Array.isArray(data)
+          data.map (d) -> _(d).omit(list)
+        else
+          _(data).omit(list)
+
+      if fields?
+        if typeof fields is 'function'
+          data = fields(data)
+        else if typeof fields is 'string' or Array.isArray(fields)
+          data = only(data, fields)
+        else
+          data = only(data, fields.only) if fields.only?
+          data = except(data, fields.except) if fields.except?
+          data = extract(data, fields.extract) if fields.extract?
+
+      @respond_json(200, data)
+
+    return respond() unless promise_or_data?
+    if promise_or_data.onAll? and typeof promise_or_data.onAll is 'function'
+      promise_or_data.onAll(respond)
+    else
+      return respond(promise_or_data) if is_error(promise_or_data)
+      respond(null, promise_or_data)
+  
   # options: httpOnly, secure, expires, maxAge
   set_cookie: (name, value, options) ->
     @_responder.res.cookie name, value, options
