@@ -10,8 +10,8 @@ class Controller
     Object.defineProperty(@, '_responder', {writable: true, value: new Responder(req, res, next)})
     
     @flash = @session?.flash
-    @flash = req.flash() if !@flash? or @flash is {}
-    delete @session.flash
+    @flash = req.flash() if req.flash? and !@flash? or @flash is {}
+    delete @session?.flash
     
     @respond_with.callback = (err, data) =>
       @respond_with(err ? data)
