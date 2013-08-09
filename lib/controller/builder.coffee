@@ -130,6 +130,7 @@ Builder.add_plugin 'csrf',
     # add csrf if configured
     unless Caboose.app.config.controller.csrf.enabled is false
       controller.before '_execute', (next) ->
+        return next() unless @session?
         token = @session._csrf ||= generate_token()
         return next() if @request.method in ['GET', 'HEAD', 'OPTIONS']
         value = Caboose.app.config.controller.csrf.value(@request)
